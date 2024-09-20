@@ -21,12 +21,12 @@ export function PasswordInput({ name, placeholder }: PasswordInputProps) {
                 className="mb-3"
             />
             {isOpen ? (
-                <EyeOff
+                <Eye
                     className="absolute top-5 right-2 transform -translate-y-1/2"
                     onClick={() => setIsOpen(!isOpen)}
                 />
             ) : (
-                <Eye
+                <EyeOff
                     className="absolute top-5 right-2 transform -translate-y-1/2"
                     onClick={() => setIsOpen(!isOpen)}
                 />

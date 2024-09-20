@@ -14,7 +14,7 @@ export const updateProfileAction = async (formData: FormData) => {
     const address = formData.get("address") as string;
     const avatarFile = formData.get("avatar") as File | null;
     const acc_status = formData.get("acc-status") as string;
-    console.log("avatarFile", avatarFile);
+    const last_updated = new Date().toISOString();
 
     let avatar_url: string | null = null;
 
@@ -47,12 +47,14 @@ export const updateProfileAction = async (formData: FormData) => {
         address: string;
         avatar?: string;
         account_status: string;
+        last_updated: string;
     } = {
         username: username,
         phone: phone,
         website: website,
         address: address,
         account_status: acc_status,
+        last_updated: last_updated,
     };
 
     if (avatar_url) {
