@@ -26,23 +26,32 @@ export default async function Library({
     //get files
     const { data: files, error } = await supabase
         .from("files")
-        .select("*")
+        .select(`
+            *,
+            user_profile (
+              username
+            )
+          `)
         .eq("user_id", user?.id);
 
     return (
-        <div className="flex-1 w-full flex flex-col gap-12">
-            <div className="w-full">
-                <div className="relative ml-auto flex-1 md:grow-0">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search by file name"
-                        className="w-full rounded-lg bg-background pl-8"
-                    />
+        <div className="w-full lg:min-w-full flex flex-col gap-6">
+            {files && files.length > 0 && (
+                <div className="w-full">
+                    <div className="relative w-full">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search by file name"
+                            className="w-full rounded-lg bg-background pl-8"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div className="flex flex-col gap-2 items-start">
-                <h2 className="font-bold text-2xl mb-4">My Library</h2>
+            )}
+            <div className="w-full flex flex-col gap-2 items-center">
+                <h2 className="font-bold text-2xl mb-4 text-center">
+                    My Library
+                </h2>
                 <LibraryTable files={files} />
             </div>
         </div>

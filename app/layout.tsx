@@ -51,7 +51,6 @@ export default function RootLayout({
                                             />
                                             SecuredTrans
                                         </Link>
-                                        {/* <Link href={"/"}>SecuredTrans</Link> */}
                                     </div>
                                     <div className="flex">
                                         {!hasEnvVars ? (
@@ -63,7 +62,7 @@ export default function RootLayout({
                                     </div>
                                 </div>
                             </nav>
-                            <div className="flex flex-col gap-20 max-w-5xl px-3">
+                            <div className="flex flex-col gap-20 max-w-5xl px-3 w-full">
                                 {children}
                             </div>
                         </div>
