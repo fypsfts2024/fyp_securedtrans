@@ -17,7 +17,12 @@ interface FileWithPreview extends FileWithPath {
     preview: string;
 }
 
-const UploadFileDialog: React.FC = () => {
+interface UploadFileDialogProps {
+    action: "upload" | "update";
+    fileId?: string;
+}
+
+const UploadFileDialog: React.FC<UploadFileDialogProps> = ({ action, fileId }) => {
     const [files, setFiles] = useState<FileWithPreview[]>([]);
     const [uploading, setUploading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -51,13 +56,15 @@ const UploadFileDialog: React.FC = () => {
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_BASE_API_URL}/upload`,
-                    {
-                        method: "POST",
-                        body: formData,
-                    }
-                );
+                const apiUrl =
+                action === "upload"
+                    ? `${process.env.NEXT_PUBLIC_BASE_API_URL}/upload`
+                    : `${process.env.NEXT_PUBLIC_BASE_API_URL}/files/${fileId}/update`; 
+
+                const res = await fetch(apiUrl, {
+                    method: action === "upload" ? "POST" : "PUT",
+                    body: formData,
+                });
 
                 if (!res.ok) {
                     const errorData = await res.json();
@@ -92,7 +99,11 @@ const UploadFileDialog: React.FC = () => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">Upload File</Button>
+                {action === "upload" ? (
+                    <Button variant="outline">Upload File</Button>
+                ) : (
+                    <Button variant="ghost" className="p-0" onClick={(event) => { event.stopPropagation(); }}>Update</Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

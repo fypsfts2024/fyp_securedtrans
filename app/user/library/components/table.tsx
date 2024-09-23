@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
-import UploadFileDialog from "./upload-file-dialog";
+import UploadFileDialog from "@/components/upload-file-dialog";
 import FileActions from "./file-actions";
 import UnblockButton from "./unblock-btn";
 import PinDialog from "./pin-dialog";
@@ -66,7 +66,7 @@ const LibraryTable = ({ files }: LibraryProps) => {
         return (
             <div className="w-full flex-1 flex flex-col items-center h-screen sm:max-w-md justify-center gap-2 p-4">
                 <p className="text-muted-foreground">No files found.</p>
-                <UploadFileDialog />
+                <UploadFileDialog action="upload" />
             </div>
         );
     }
@@ -192,7 +192,7 @@ const LibraryTable = ({ files }: LibraryProps) => {
                     ))}
                 </TableBody>
             </Table>
-            <UploadFileDialog />
+            <UploadFileDialog action="upload" />
         </>
     );
 };

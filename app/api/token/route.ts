@@ -15,10 +15,29 @@ export const generateAccessToken = async (
         file_id: fileId,
         user_id: userId,
         token,
-        expires_at: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
+        expires_at: new Date(Date.now() + (parseExpiration(expiresIn) * 1000)), // Convert to milliseconds
     });
 
     return token;
+};
+
+const parseExpiration = (expiresIn: string): number => {
+    const regex = /(\d+)([hms])/; // Match number and unit
+    const match = expiresIn.match(regex);
+    if (!match) return 3600; // Default to 1 hour if parsing fails
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    switch (unit) {
+        case 'h':
+            return value * 3600; // Convert hours to seconds
+        case 'm':
+            return value * 60; // Convert minutes to seconds
+        case 's':
+        default:
+            return value; // Seconds
+    }
 };
 
 export const validateAccessToken = async (
@@ -52,7 +71,7 @@ export const validateAccessToken = async (
 
 export async function POST(request: Request) {
     try {
-        const { fileId, userId } = await request.json();
+        const { fileId, userId, expiresIn } = await request.json();
         if (!fileId || !userId) {
             return NextResponse.json(
                 { error: "Invalid request" },
@@ -60,7 +79,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const token = await generateAccessToken(fileId, userId);
+        const token = await generateAccessToken(fileId, userId, expiresIn);
         return NextResponse.json({ token }, { status: 200 });
     } catch (error) {
         console.error("Error generating token:", error);
