@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { validateAccessToken } from "@/app/api/token/route";
+import { validateAccessToken } from "@/utils/tokenManagement";
 import { createClient } from "@/utils/supabase/server";
 import {
     DropdownMenu,
