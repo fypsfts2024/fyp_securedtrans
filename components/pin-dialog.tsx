@@ -132,10 +132,6 @@ const PinDialog: React.FC<PinDialogProps> = ({
         return data.unblock_otp === otp;
     }
 
-    if (initialStatus === "deleted") {
-        return null;
-    }
-
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>

@@ -20,7 +20,7 @@ import { MoreHorizontal, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
 import UploadFileDialog from "@/components/upload-file-dialog";
 import FileActions from "./file-actions";
 import UnblockButton from "./unblock-btn";
-import PinDialog from "./pin-dialog";
+import PinDialog from "@/components/pin-dialog";
 
 interface UserProfile {
     username: string;

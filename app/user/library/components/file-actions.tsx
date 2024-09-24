@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import PinDialog from "./pin-dialog";
+import PinDialog from "@/components/pin-dialog";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
