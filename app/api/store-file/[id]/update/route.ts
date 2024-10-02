@@ -3,25 +3,22 @@ import { NextResponse } from "next/server";
 
 export async function PUT(
     request: Request,
-    { params }: { params: { fileId: string } }
+    { params }: { params: { id: string } }
 ) {
     const supabase = createClient();
 
     try {
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            return NextResponse.json(
-                { error: "User not authenticated" },
-                { status: 401 }
-            );
+            return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
         }
 
         // Parse the multipart form data
         const formData = await request.formData();
         const file = formData.get("file") as File;
-        const fileId = params.fileId;
+        const scanResultsString = formData.get("scanResults") as string; 
+
+        const fileId = params.id;
 
         if (!file || !fileId) {
             return NextResponse.json(
@@ -30,48 +27,28 @@ export async function PUT(
             );
         }
 
-        // Convert file to a Blob (or ArrayBuffer) for VirusTotal scan
-        const fileArrayBuffer = await file.arrayBuffer();
-        const fileBlob = new Blob([fileArrayBuffer], { type: file.type });
-
-        // Scan the file with VirusTotal
-        const vtFormData = new FormData();
-        vtFormData.append("file", fileBlob, file.name);
-
-        const vtResponse = await fetch(
-            "https://www.virustotal.com/api/v3/files",
-            {
-                method: "POST",
-                headers: {
-                    accept: "application/json",
-                    "x-apikey": process.env.VIRUSTOTAL_API_KEY || "",
-                },
-                body: vtFormData,
-            }
-        );
-
-        const vtResult = await vtResponse.json();
-
-        if (!vtResponse.ok) {
-            console.error("VirusTotal scan error:", vtResult);
-            return NextResponse.json(
-                { error: "Error scanning file with VirusTotal" },
-                { status: 500 }
-            );
+        if (!scanResultsString) {
+            return NextResponse.json({ error: "No scan results provided" }, { status: 400 });
         }
 
-        const analysisUrl = vtResult.data.links.self;
+        // Parse scanResults from string to JSON
+        let scanResults;
+        try {
+            scanResults = JSON.parse(scanResultsString);
+        } catch (error) {
+            return NextResponse.json({ error: "Invalid scan results format" }, { status: 400 });
+        }
 
-        // Query the analysis result (VirusTotal scan is asynchronous)
-        const analysisResponse = await fetch(analysisUrl, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-                "x-apikey": process.env.VIRUSTOTAL_API_KEY || "",
-            },
-        });
+        // Check scanResults properties after parsing
+        if (scanResults.data.attributes.status !== "completed") {
+            return NextResponse.json({ error: "Scan not completed" }, { status: 400 });
+        }
 
-        const analysisResult = await analysisResponse.json();
+        const isSafe = scanResults.data.attributes.stats.malicious === 0;
+
+        if (!isSafe) {
+            return NextResponse.json({ error: "File deemed unsafe" }, { status: 400 });
+        }
 
         // Fetch existing file information from Supabase
         const { data: existingFile, error: fileError } = await supabase
@@ -107,7 +84,7 @@ export async function PUT(
         const newFilePath = `${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage
             .from(user.id)
-            .upload(newFilePath, fileArrayBuffer);
+            .upload(newFilePath, file);
 
         if (uploadError) throw uploadError;
 
@@ -126,13 +103,7 @@ export async function PUT(
 
         if (updateError) throw updateError;
 
-        return NextResponse.json(
-            {
-                message: "File updated and scanned successfully",
-                scanResults: analysisResult,
-            },
-            { status: 200 }
-        );
+        return NextResponse.json({ message: "File updated and scanned successfully" }, { status: 200 });
     } catch (error) {
         console.error("Error updating file:", error);
         return NextResponse.json(
