@@ -35,14 +35,17 @@ export async function POST(request: Request) {
         const vtFormData = new FormData();
         vtFormData.append("file", fileBlob, file.name);
 
-        const vtResponse = await fetch("https://www.virustotal.com/api/v3/files", {
-            method: "POST",
-            headers: {
-                accept: "application/json",
-                "x-apikey": process.env.VIRUSTOTAL_API_KEY || "",
-            },
-            body: vtFormData,
-        });
+        const vtResponse = await fetch(
+            "https://www.virustotal.com/api/v3/files",
+            {
+                method: "POST",
+                headers: {
+                    accept: "application/json",
+                    "x-apikey": process.env.VIRUSTOTAL_API_KEY || "",
+                },
+                body: vtFormData,
+            }
+        );
 
         const vtResult = await vtResponse.json();
 
@@ -66,6 +69,7 @@ export async function POST(request: Request) {
         });
 
         const analysisResult = await analysisResponse.json();
+        console.log("VirusTotal analysis result:", analysisResult);
 
         // Check if bucket exists, if not create it
         const { data: buckets, error: bucketError } =
@@ -74,21 +78,23 @@ export async function POST(request: Request) {
 
         if (!buckets.find((b) => b.name === user.id)) {
             const { error } = await supabase.storage.createBucket(user.id, {
-                public: false,
+                public: true,
             });
             if (error) throw error;
         }
 
+        const filename = `${Date.now()}_${file.name}`;
+
         // Upload file to Supabase Storage
         const { error: uploadError } = await supabase.storage
             .from(user.id)
-            .upload(`${Date.now()}_${file.name}`, fileArrayBuffer);
+            .upload(filename, file);
 
         if (uploadError) throw uploadError;
 
         const { data } = supabase.storage
             .from(user.id)
-            .getPublicUrl(`${Date.now()}_${file.name}`);
+            .getPublicUrl(filename);
 
         //update files table
         const { error: fileError } = await supabase.from("files").insert([
@@ -102,7 +108,10 @@ export async function POST(request: Request) {
         if (fileError) throw fileError;
 
         return NextResponse.json(
-            { message: "File uploaded and scanned successfully", scanResults: analysisResult },
+            {
+                message: "File uploaded and scanned successfully",
+                scanResults: analysisResult,
+            },
             { status: 200 }
         );
     } catch (error) {

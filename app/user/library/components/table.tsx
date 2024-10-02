@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
     Table,
     TableBody,
@@ -61,6 +62,19 @@ const formatDateTime = (dateString: string) => {
 const LibraryTable = ({ files }: LibraryProps) => {
     const [sortField, setSortField] = useState<SortField>("created_at");
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+    const [openPinDialog, setOpenPinDialog] = useState(false);
+    const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const openModal = searchParams.get("openModal");
+        const fileIdParam = searchParams.get("fileId");
+        
+        if (openModal === "true" && fileIdParam) {
+            setSelectedFileId(fileIdParam);
+            setOpenPinDialog(true);
+        }
+    }, [searchParams]);
 
     if (!files || files.length === 0) {
         return (
@@ -109,6 +123,7 @@ const LibraryTable = ({ files }: LibraryProps) => {
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead>File ID</TableHead>
                         <TableHead>
                             <Button
                                 variant="ghost"
@@ -144,6 +159,7 @@ const LibraryTable = ({ files }: LibraryProps) => {
                                     : ""
                             }
                         >
+                            <TableCell>{file.id}</TableCell>
                             <TableCell className="font-medium">
                                 {formatDateTime(file.created_at)}
                             </TableCell>
@@ -159,10 +175,10 @@ const LibraryTable = ({ files }: LibraryProps) => {
                                         fileId={file.id}
                                         status={file.status}
                                         onSuccess={() =>
-                                            console.log("File unblocked")
+                                            window.location.href = `/user/library`
                                         }
                                         onFailure={() =>
-                                            console.log("File access failed")
+                                            window.location.href = `/user/library`
                                         }
                                     />
                                 )}
@@ -193,6 +209,16 @@ const LibraryTable = ({ files }: LibraryProps) => {
                 </TableBody>
             </Table>
             <UploadFileDialog action="upload" />
+            {openPinDialog && selectedFileId && (
+                <PinDialog
+                    name="OTP Verification"
+                    fileId={selectedFileId}
+                    status="otp_sent"
+                    hideTrigger = {true}
+                    onSuccess={() => window.location.href = `/user/library`}
+                    onFailure={() => window.location.href = `/user/library`}
+                />
+            )}
         </>
     );
 };

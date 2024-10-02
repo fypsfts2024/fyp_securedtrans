@@ -37,6 +37,7 @@
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.53.0",
+    "resend": "^4.0.0",
     "vaul": "^0.9.3",
     "zod": "^3.23.8"
   },

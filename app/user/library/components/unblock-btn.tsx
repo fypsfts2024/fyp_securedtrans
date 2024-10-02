@@ -32,8 +32,21 @@ const UnblockButton: React.FC<UnblockButtonProps> = ({
         }
     }
 
+    async function updateOtp(otp: string): Promise<void> {
+        const { error } = await supabase
+            .from("files")
+            .update({ unblock_otp: otp })
+            .eq("id", fileId);
+
+        if (error) {
+            toast({
+                title: "Error",
+                description: "An error occurred while updating the OTP",
+            });
+        }
+    }
+
     async function sendOtp(): Promise<void> {
-        // Implement logic to send OTP to user's email
         const { data, error } = await supabase.auth.getUser();
         
         if (error || !data.user) {
@@ -54,18 +67,36 @@ const UnblockButton: React.FC<UnblockButtonProps> = ({
             return;
         }
 
-        // Generate OTP (you might want to use a library for this)
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const emailRedirectTo = `${process.env.NEXT_PUBLIC_BASE_URL}/user/library?fileId=${fileId}&openModal=true`;
+        const recipient = email;
 
-        // Send email with OTP (you'll need to implement this part)
-        // For now, we'll just log it
-        console.log(`OTP ${otp} sent to ${email} for file ${fileId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ emailRedirectTo, recipient, generatedOtp: otp, fileId }),
+        });
 
-        // await updateFileStatus("otp_sent");
+        if (!res.ok) {
+            console.error("Failed to send OTP:", res);
+            toast({
+                title: "Error",
+                description: "Failed to send OTP",
+            });
+            return;
+        }
+
+        await updateOtp(otp);
+        await updateFileStatus("otp_sent");
+
         toast({
             title: "OTP Sent",
             description: "Check your email for the OTP",
         });
+
+        window.location.reload();
     }
 
     return (

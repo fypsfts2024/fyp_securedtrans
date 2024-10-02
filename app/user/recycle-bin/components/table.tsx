@@ -102,7 +102,7 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
         <>
             <Table>
                 <TableHeader>
-                    <TableRow>
+                    <TableRow><TableHead>File ID</TableHead>
                         <TableHead>
                             <Button
                                 variant="ghost"
@@ -129,6 +129,7 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
                 <TableBody>
                     {sortedFiles.map((file) => (
                         <TableRow key={file.id}>
+                            <TableCell>{file.id}</TableCell>
                             <TableCell className="font-medium">
                                 {formatDateTime(file.deleted_at)}
                             </TableCell>
