@@ -7,24 +7,41 @@ export async function GET(
 ) {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    const { data: fileData, error: fileError } = await supabase
         .from("files")
-        .select("file_path, file_name")
+        .select("*")
         .eq("id", params.fileId)
         .single();
 
-    if (error || !data) {
+    if (fileError || !fileData) {
         return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
+    const filename = fileData.file_path.split("/").pop();
+
+    // Download file from Supabase storage
+    const { data, error: downloadError } = await supabase.storage
+        .from(fileData.user_id)
+        .download(filename);
+
+    if (downloadError) {
+        console.error("Error downloading file:", downloadError);
+        return NextResponse.json(
+            { error: "File download failed" },
+            { status: 500 }
+        );
+    }
+
+    // Set appropriate headers
     const headers = new Headers();
     headers.set(
         "Content-Disposition",
-        `attachment; filename="${data.file_name}"`
+        `attachment; filename="${fileData.file_name}"`
     );
     headers.set("Content-Type", "application/octet-stream");
 
-    return new NextResponse(data.file_path, {
+    // Return file content
+    return new NextResponse(data, {
         status: 200,
         headers,
     });
