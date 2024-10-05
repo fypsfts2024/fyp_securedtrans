@@ -32,15 +32,15 @@ export async function GET(
         );
     }
 
-    // Set appropriate headers
     const headers = new Headers();
     headers.set(
         "Content-Disposition",
-        `attachment; filename="${fileData.file_name}"`
+        `inline; filename="${fileData.file_name}"`
     );
-    headers.set("Content-Type", "application/octet-stream");
 
-    // Return file content
+    const contentType = data.type || "application/octet-stream";
+    headers.set("Content-Type", contentType);
+
     return new NextResponse(data, {
         status: 200,
         headers,
