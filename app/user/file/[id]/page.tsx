@@ -6,7 +6,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
@@ -30,7 +29,7 @@ async function fetchFileContent(fileId: string): Promise<FileData | null> {
 
     if (error) {
         console.error("Error fetching file:", error);
-        return null;
+        throw new Error("Failed to fetch file data");
     }
 
     return data as FileData;
@@ -116,76 +115,75 @@ export default async function FilePage({
     const { id } = params;
     const token = searchParams.token;
 
-    if (typeof token === "string" && typeof id === "string") {
-        try {
-            const validFileId = await validateAccessToken(token);
-
-            if (validFileId === id) {
-                const fileData = await fetchFileContent(id);
-
-                if (fileData) {
-                    return (
-                        <div className="container mx-auto p-4">
-                            <div className="flex justify-between">
-                                <div>
-                                    <h1 className="text-2xl font-bold mb-4">
-                                        {fileData.file_name}
-                                    </h1>
-                                    <p className="mb-4">
-                                        Date:{" "}
-                                        {new Date(
-                                            fileData.created_at
-                                        ).toLocaleString()}
-                                    </p>
-                                </div>
-                                <div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger>
-                                            <MoreVertical className="h-4 w-4" />
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>
-                                                File Actions
-                                            </DropdownMenuLabel>
-                                            <DropdownMenuItem>
-                                                <a
-                                                    href={fileData.file_path}
-                                                    download
-                                                    className="cursor-pointer"
-                                                >
-                                                    Download
-                                                </a>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <UploadFileDialog
-                                                    action="update"
-                                                    fileId={id}
-                                                />
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <DeleteButton fileId={id} />
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </div>
-                            <hr className="mb-4" />
-                            <div className="p-4 border border-gray-200 rounded-md shadow-md">
-                                {renderFileContent(fileData)}
-                            </div>
-                        </div>
-                    );
-                }
-            }
-        } catch (error) {
-            console.error("Error validating access token:", error);
-        }
+    if (typeof token !== "string" || typeof id !== "string") {
+        return renderErrorMessage("Invalid request parameters");
     }
 
+    try {
+        const validFileId = await validateAccessToken(token);
+
+        if (validFileId !== id) {
+            return renderErrorMessage("Invalid access token for this file");
+        }
+
+        const fileData = await fetchFileContent(id);
+
+        if (!fileData) {
+            return renderErrorMessage("File not found");
+        }
+
+        return (
+            <div className="container mx-auto p-4">
+                <div className="flex justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold mb-4">{fileData.file_name}</h1>
+                        <p className="mb-4">
+                            Date: {new Date(fileData.created_at).toLocaleString()}
+                        </p>
+                    </div>
+                    <div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <MoreVertical className="h-4 w-4" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>File Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>
+                                    <a
+                                        href={fileData.file_path}
+                                        download
+                                        className="cursor-pointer"
+                                    >
+                                        Download
+                                    </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <UploadFileDialog action="update" fileId={id} />
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <DeleteButton fileId={id} />
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+                <hr className="mb-4" />
+                <div className="p-4 border border-gray-200 rounded-md shadow-md">
+                    {renderFileContent(fileData)}
+                </div>
+            </div>
+        );
+    } catch (error) {
+        console.error("Error processing file request:", error);
+        return renderErrorMessage("An error occurred while processing your request");
+    }
+}
+
+function renderErrorMessage(message: string): JSX.Element {
     return (
         <div className="flex flex-col items-center justify-center">
             <div className="p-4 bg-red-200 text-red-800 border border-red-400 rounded-md shadow-md mb-4">
-                Unauthorized access. Please obtain a valid access link.
+                {message}
             </div>
             <Link href="/user/library">
                 <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300">

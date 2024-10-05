@@ -178,3 +178,28 @@ export async function signInWithGoogle() {
 
     redirect(data.url);
 }
+
+export const AdminSignInAction = async (formData: FormData) => {
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from("admin")
+        .select("*")
+        .eq("email", email)
+        .eq("password", password)
+        .single();
+
+    if (error || !data) {
+        return {
+            success: false,
+            message: "Invalid email or password",
+        };
+    }
+
+    return {
+        success: true,
+        admin: data,
+    };
+};

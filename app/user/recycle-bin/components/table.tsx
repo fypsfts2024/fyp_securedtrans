@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
 import RequestRestroreButton from "./request-restore-btn";
+import DeleteButton from "./delete-btn";
 
 interface File {
     id: string;
@@ -27,7 +28,11 @@ interface RecycleBin {
     id: string;
     file_id: string;
     deleted_at: string;
-    status: "deleted" | "restore_requested" | "restore_approved" | "retore_rejected";
+    status:
+        | "deleted"
+        | "restore_requested"
+        | "restore_approved"
+        | "restore_rejected";
     otp: string;
     otp_expiry: string;
     files: File;
@@ -102,7 +107,8 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
         <>
             <Table>
                 <TableHeader>
-                    <TableRow><TableHead>File ID</TableHead>
+                    <TableRow>
+                        <TableHead>File ID</TableHead>
                         <TableHead>
                             <Button
                                 variant="ghost"
@@ -135,9 +141,30 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
                             </TableCell>
                             <TableCell>{file.files.file_name}</TableCell>
                             <TableCell className="text-right">
-                                {file.status === "deleted" && (
-                                    <RequestRestroreButton id={file.id} />
-                                )}
+                                <div className="flex flex-row space-x-2 justify-end">
+                                    {file.status === "deleted" && (
+                                        <RequestRestroreButton id={file.id} />
+                                    )}
+
+                                    {file.status === "restore_requested" && (
+                                        <Button className="bg-yellow-500 text-white" disabled>
+                                            Pending
+                                        </Button>
+                                    )}
+
+                                    {file.status === "restore_approved" && (
+                                        <Button className="bg-green-500 text-white" disabled>
+                                            Approved
+                                        </Button>
+                                    )}
+
+                                    {file.status === "restore_rejected" && (
+                                        <Button className="bg-red-500 text-white" disabled>
+                                            Rejected
+                                        </Button>
+                                    )}
+                                    <DeleteButton id={file.id} />
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}

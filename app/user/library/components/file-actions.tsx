@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import PinDialog from "@/components/pin-dialog";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ShareDialog from "./share-dialog";
 
 interface File {
     id: string;
@@ -17,6 +18,7 @@ interface FileActionsProps {
 
 const FileActions: React.FC<FileActionsProps> = ({ file }) => {
     const supabase = createClient();
+    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
     const handleFileAction = async (action: string) => {
         switch (action) {
@@ -89,10 +91,8 @@ const FileActions: React.FC<FileActionsProps> = ({ file }) => {
         }
     };
 
-    const shareFile = async (file: File) => {
-        // Uncomment and implement share functionality
-        // const token = await generateAccessToken(file.id, userId);
-        // setAccessLink(`${window.location.origin}/file/${file.id}?token=${token}`);
+    const shareFile = (file: File) => {
+        setIsShareDialogOpen(true);
     };
 
     const renderActionButton = (name: string, action: string) => {
@@ -112,6 +112,11 @@ const FileActions: React.FC<FileActionsProps> = ({ file }) => {
             {renderActionButton("View", "view")}
             {renderActionButton("Delete", "delete")}
             {renderActionButton("Share", "share")}
+            <ShareDialog
+                isOpen={isShareDialogOpen}
+                onClose={() => setIsShareDialogOpen(false)}
+                fileId={file.id}
+            />
         </div>
     );
 };
