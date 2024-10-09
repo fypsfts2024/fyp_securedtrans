@@ -7,6 +7,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { updateProfileAction } from "./profile-action";
 import { AvatarUpdate } from "@/components/avatar-update";
 import AccountStatusSwitch from "./components/acc-status-switch";
+import { redirect } from "next/navigation";
 
 export default async function Profile({
     searchParams,
@@ -23,6 +24,10 @@ export default async function Profile({
     const {
         data: { user },
     } = await createClient().auth.getUser();
+
+    if (!user) {
+        return redirect("/sign-in");
+    }
 
     const { data, error } = await createClient()
         .from("user_profile")

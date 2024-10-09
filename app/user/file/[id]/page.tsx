@@ -114,6 +114,7 @@ export default async function FilePage({
 }: FilePageProps): Promise<JSX.Element> {
     const { id } = params;
     const token = searchParams.token;
+    const isShared = searchParams.shared === "true";
 
     if (typeof token !== "string" || typeof id !== "string") {
         return renderErrorMessage("Invalid request parameters");
@@ -136,9 +137,12 @@ export default async function FilePage({
             <div className="container mx-auto p-4">
                 <div className="flex justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold mb-4">{fileData.file_name}</h1>
+                        <h1 className="text-2xl font-bold mb-4">
+                            {fileData.file_name}
+                        </h1>
                         <p className="mb-4">
-                            Date: {new Date(fileData.created_at).toLocaleString()}
+                            Date:{" "}
+                            {new Date(fileData.created_at).toLocaleString()}
                         </p>
                     </div>
                     <div>
@@ -147,7 +151,9 @@ export default async function FilePage({
                                 <MoreVertical className="h-4 w-4" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuLabel>File Actions</DropdownMenuLabel>
+                                <DropdownMenuLabel>
+                                    File Actions
+                                </DropdownMenuLabel>
                                 <DropdownMenuItem>
                                     <a
                                         href={fileData.file_path}
@@ -157,12 +163,19 @@ export default async function FilePage({
                                         Download
                                     </a>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <UploadFileDialog action="update" fileId={id} />
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <DeleteButton fileId={id} />
-                                </DropdownMenuItem>
+                                {!isShared && (
+                                    <>
+                                        <DropdownMenuItem>
+                                            <UploadFileDialog
+                                                action="update"
+                                                fileId={id}
+                                            />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            <DeleteButton fileId={id} />
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -175,7 +188,9 @@ export default async function FilePage({
         );
     } catch (error) {
         console.error("Error processing file request:", error);
-        return renderErrorMessage("An error occurred while processing your request");
+        return renderErrorMessage(
+            "An error occurred while processing your request"
+        );
     }
 }
 

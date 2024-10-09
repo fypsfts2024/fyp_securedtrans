@@ -2,8 +2,9 @@ import { createClient } from "@/utils/supabase/server";
 import { FormMessage, Message } from "@/components/form-message";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import LibraryTable from "./components/table";
+import LibraryTable from "@/app/user/library/components/table";
 import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
 
 export default async function Library({
     searchParams,
@@ -24,6 +25,10 @@ export default async function Library({
         data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) {
+        return redirect("/sign-in");
+    }
+
     let query = supabase
         .from("files")
         .select(
@@ -37,7 +42,6 @@ export default async function Library({
         .eq("user_id", user?.id)
         .neq("status", "deleted");
 
-    // Apply search filter if search parameter is present
     if (searchParams.search) {
         query = query.ilike("file_name", `%${searchParams.search}%`);
     }

@@ -105,13 +105,28 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
             .select(`*`)
             .neq("id", user?.id);
 
+        const { data: sharedUsers, error: sharedError } = await supabase
+            .from("file_shares")
+            .select("*")
+            .eq("file_id", fileId);
+
         if (error) {
             console.error("Error fetching users:", error);
             return;
         }
 
         setUsers(
-            data.map((user: any) => ({ value: user.id, label: user.username }))
+            data
+                .filter((user: any) => {
+                    if (sharedUsers) {
+                        return !sharedUsers.some(
+                            (sharedUser: any) =>
+                                sharedUser.shared_with_user_id === user.id
+                        );
+                    }
+                    return true;
+                })
+                .map((user: any) => ({ value: user.id, label: user.username }))
         );
     };
 
@@ -137,53 +152,99 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         });
     };
 
-    const createShareLink = async (fileId: string, userId: string, expiresIn: number) => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/token`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fileId, userId, expiresIn }),
-        });
-        if (!res.ok) throw new Error(`Error creating share link for user: ${userId}`);
+    const createShareLink = async (
+        fileId: string,
+        userId: string,
+        expiresIn?: number
+    ) => {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API_URL}/token`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fileId, userId, expiresIn }),
+            }
+        );
+        if (!res.ok)
+            throw new Error(`Error creating share link for user: ${userId}`);
         return res.json();
     };
-    
-    const storeShareData = async (fileId: string, userId: string, expiresAt: string, pin: string) => {
+
+    const storeShareData = async (
+        fileId: string,
+        userId: string,
+        expiresAt: string,
+        pin: string
+    ) => {
         const { error } = await supabase
             .from("file_shares")
             .insert({ file_id: fileId, shared_with_user_id: userId, pin });
-        if (error) throw new Error(`Error inserting share data: ${error.message}`);
+        if (error)
+            throw new Error(`Error inserting share data: ${error.message}`);
     };
-    
-    const sendInviteEmail = async (emailRedirectTo: string, recipient: string, fileId: string) => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/invite-email`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ emailRedirectTo, recipient, fileId }),
-        });
-        if (!res.ok) throw new Error(`Error sending email to user: ${recipient}`);
+
+    const sendInviteEmail = async (
+        emailRedirectTo: string,
+        recipient: string,
+        fileId: string
+    ) => {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API_URL}/invite-email`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ emailRedirectTo, recipient, fileId }),
+            }
+        );
+        if (!res.ok)
+            throw new Error(`Error sending email to user: ${recipient}`);
     };
-    
+
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
         const errors: string[] = [];
-        const expiresIn = new Date(data.date).getTime();
-        const expiresAt = new Date(data.date).toISOString();
-    
+        const expiresIn = data.date
+            ? new Date(data.date).getTime() - Date.now()
+            : undefined;
+        const expiresAt = data.date
+            ? new Date(data.date).toISOString()
+            : undefined;
+
         try {
-            await Promise.all(data.users.map(async (user) => {
-                try {
-                    const result = await createShareLink(fileId, user.value, expiresIn);
-                    await storeShareData(fileId, user.value, expiresAt, data.pin);
-                    const emailRedirectTo = `${process.env.NEXT_PUBLIC_BASE_URL}/user/file/${fileId}?token=${result.token}`;
-                    await sendInviteEmail(emailRedirectTo, user.value, fileId);
-                } catch (error) {
-                    errors.push(`Error processing user ${user.label}: ${error}`);
-                }
-            }));
-    
+            await Promise.all(
+                data.users.map(async (user) => {
+                    try {
+                        const result = await createShareLink(
+                            fileId,
+                            user.value,
+                            expiresIn
+                        );
+                        if (expiresAt) {
+                            await storeShareData(
+                                fileId,
+                                user.value,
+                                expiresAt,
+                                data.pin
+                            );
+                        }
+                        const emailRedirectTo = `${process.env.NEXT_PUBLIC_BASE_URL}/user/file/${fileId}?token=${result.token}&shared=true`;
+                        await sendInviteEmail(
+                            emailRedirectTo,
+                            user.value,
+                            fileId
+                        );
+                    } catch (error) {
+                        errors.push(
+                            `Error processing user ${user.label}: ${error}`
+                        );
+                    }
+                })
+            );
+
             if (errors.length > 0) {
                 toast({
                     title: "Partial Success",
-                    description: "Some users could not be processed. Check console for details.",
+                    description:
+                        "Some users could not be processed. Check console for details.",
                 });
                 console.error("Errors during processing:", errors);
             } else {
@@ -192,7 +253,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     description: "File shared successfully with all users",
                 });
             }
-    
+
             onClose();
         } catch (error) {
             console.error("Error submitting form:", error);

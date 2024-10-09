@@ -13,7 +13,7 @@ const QRCodeComponent: React.FC<QRCodeProps> = ({ fileId }) => {
     useEffect(() => {
         const generateQRCode = async () => {
             const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_API_URL}/download/${fileId}`;
-            console.log("downloadUrl", downloadUrl);
+
             try {
                 const qrCodeDataUrl = await QRCode.toDataURL(downloadUrl);
                 setQRCode(qrCodeDataUrl);

@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import {
     Table,
     TableBody,
@@ -16,12 +15,20 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
-import UploadFileDialog from "@/components/upload-file-dialog";
 import FileActions from "./file-actions";
-import UnblockButton from "@/components/unblock-btn";
-import PinDialog from "@/components/pin-dialog";
 
 interface UserProfile {
     username: string;
@@ -39,48 +46,21 @@ interface File {
     user_profile: UserProfile;
 }
 
-type LibraryProps = {
+type SharedProps = {
     files: File[] | null;
 };
 
 type SortField = "created_at" | "file_name";
 type SortOrder = "asc" | "desc";
 
-const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-GB", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-    }).format(date);
-};
-
-const LibraryTable = ({ files }: LibraryProps) => {
+const SharedTable = ({ files }: SharedProps) => {
     const [sortField, setSortField] = useState<SortField>("created_at");
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-    const [openPinDialog, setOpenPinDialog] = useState(false);
-    const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        const openModal = searchParams.get("openModal");
-        const fileIdParam = searchParams.get("fileId");
-        
-        if (openModal === "true" && fileIdParam) {
-            setSelectedFileId(fileIdParam);
-            setOpenPinDialog(true);
-        }
-    }, [searchParams]);
 
     if (!files || files.length === 0) {
         return (
             <div className="w-full flex-1 flex flex-col items-center h-screen sm:max-w-md justify-center gap-2 p-4">
                 <p className="text-muted-foreground">No files found.</p>
-                <UploadFileDialog action="upload" />
             </div>
         );
     }
@@ -116,6 +96,19 @@ const LibraryTable = ({ files }: LibraryProps) => {
         ) : (
             <ArrowDown className="h-4 w-4 ml-1" />
         );
+    };
+
+    const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat("en-GB", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+        }).format(date);
     };
 
     return (
@@ -167,20 +160,62 @@ const LibraryTable = ({ files }: LibraryProps) => {
                             <TableCell>{file.user_profile.username}</TableCell>
                             <TableCell className="text-right">
                                 {file.status === "blocked" && (
-                                    <UnblockButton fileId={file.id} />
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline">
+                                                Blocked
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>
+                                                    File Blocked
+                                                </AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This file has been blocked
+                                                    by the owner.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>
+                                                    Cancel
+                                                </AlertDialogCancel>
+                                                <AlertDialogAction>
+                                                    Got it
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 )}
                                 {file.status === "otp_sent" && (
-                                    <PinDialog
-                                        name="OTP Verification"
-                                        fileId={file.id}
-                                        status={file.status}
-                                        onSuccess={() =>
-                                            window.location.href = `/user/library`
-                                        }
-                                        onFailure={() =>
-                                            window.location.href = `/user/library`
-                                        }
-                                    />
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline">
+                                                OTP Sent
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>
+                                                    OTP Sent
+                                                </AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    An OTP has been sent to the
+                                                    file owner. Please wait for
+                                                    the owner to verify and
+                                                    unblock the file.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>
+                                                    Cancel
+                                                </AlertDialogCancel>
+                                                <AlertDialogAction>
+                                                    Got it
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 )}
                                 {file.status === "active" && (
                                     <DropdownMenu>
@@ -208,19 +243,8 @@ const LibraryTable = ({ files }: LibraryProps) => {
                     ))}
                 </TableBody>
             </Table>
-            <UploadFileDialog action="upload" />
-            {openPinDialog && selectedFileId && (
-                <PinDialog
-                    name="OTP Verification"
-                    fileId={selectedFileId}
-                    status="otp_sent"
-                    hideTrigger = {true}
-                    onSuccess={() => window.location.href = `/user/library`}
-                    onFailure={() => window.location.href = `/user/library`}
-                />
-            )}
         </>
     );
 };
 
-export default LibraryTable;
+export default SharedTable;

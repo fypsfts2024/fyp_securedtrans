@@ -19,7 +19,6 @@ export async function GET(
 
     const filename = fileData.file_path.split("/").pop();
 
-    // Download file from Supabase storage
     const { data, error: downloadError } = await supabase.storage
         .from(fileData.user_id)
         .download(filename);

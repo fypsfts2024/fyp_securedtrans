@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import RecycleBinTable from "./components/table";
 import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
 
 export default async function Library({
     searchParams,
@@ -23,6 +24,10 @@ export default async function Library({
     const {
         data: { user },
     } = await supabase.auth.getUser();
+
+    if (!user) {
+        return redirect("/sign-in");
+    }
 
     let query = supabase
         .from("recycle_bin")
