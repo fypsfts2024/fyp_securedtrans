@@ -10,7 +10,6 @@ import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 import { headers } from "next/headers";
-import { AuthProvider } from "@/components/auth-context";
 import dynamic from "next/dynamic";
 
 const ClientSideAuthProvider = dynamic(
