@@ -33,13 +33,12 @@ export default async function Library({
         .from("recycle_bin")
         .select(
             `
-            *,
-            files (*)
-          `
+    *,
+    files!inner(*)
+  `
         )
         .eq("files.user_id", user?.id);
 
-    // Apply search filter if search parameter is present
     if (searchParams.search) {
         query = query.ilike("file_name", `%${searchParams.search}%`);
     }
@@ -53,7 +52,11 @@ export default async function Library({
     return (
         <div className="w-full lg:min-w-full flex flex-col gap-6">
             <div className="w-full">
-                <form action="/user/library" method="get" className="flex flex-row space-x-3">
+                <form
+                    action="/user/library"
+                    method="get"
+                    className="flex flex-row space-x-3"
+                >
                     <div className="relative w-full">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -64,18 +67,21 @@ export default async function Library({
                             defaultValue={searchParams.search || ""}
                         />
                     </div>
-                    <Button
-                        type="submit"
-                    >
-                        Search
-                    </Button>
+                    <Button type="submit">Search</Button>
                 </form>
             </div>
             <div className="w-full flex flex-col gap-2 items-center">
                 <h2 className="font-bold text-2xl mb-4 text-center">
                     Recycle Bin
                 </h2>
-                <RecycleBinTable files={files || []} />
+
+                {files?.length === 0 ? (
+                    <div className="w-full flex-1 flex items-center h-screen sm:max-w-md justify-center gap-2 p-4">
+                        <p className="text-muted-foreground">No files found.</p>
+                    </div>
+                ) : (
+                    <RecycleBinTable files={files || []} />
+                )}
             </div>
         </div>
     );
