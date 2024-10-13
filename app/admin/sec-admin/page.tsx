@@ -11,6 +11,10 @@ export default function PrimaryAdminPage() {
         window.location.href = "/admin/sign-in";
     }
 
+    if (admin?.role == "Admin") {
+        window.location.href = "/admin/prime-admin";
+    }
+
     return (
         <div className="w-full lg:min-w-full flex flex-col gap-12">
             <div className="w-full">

@@ -57,7 +57,7 @@ export default function RootLayout({
                                             <Link
                                                 href={
                                                     isAdminRoute
-                                                        ? "/admin"
+                                                        ? "/admin/prime-admin"
                                                         : "/"
                                                 }
                                                 className="flex items-center gap-2"

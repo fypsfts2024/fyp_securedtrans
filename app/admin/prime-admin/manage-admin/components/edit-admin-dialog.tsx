@@ -71,6 +71,30 @@ const EditAdminDialog = ({ admin }: { admin: Admin }) => {
     });
 
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+        const { data: existingUsername, error: usernameError } = await supabase
+            .from("admin")
+            .select("username")
+            .eq("username", data.username)
+            .neq("id", admin.id);
+    
+        if (usernameError) {
+            console.error("Error fetching username data:", usernameError);
+            toast({
+                title: "Error",
+                description: "Failed to check username uniqueness",
+                variant: "destructive",
+            });
+            return;
+        }
+    
+        if (existingUsername && existingUsername.length > 0) {
+            form.setError("username", {
+                type: "manual",
+                message: "Username already exists",
+            });
+            return;
+        }
+    
         const { error } = await supabase
             .from("admin")
             .update({
@@ -80,7 +104,7 @@ const EditAdminDialog = ({ admin }: { admin: Admin }) => {
                 assign_date: data.assign_date.toISOString(),
             })
             .eq("id", admin.id);
-
+    
         if (error) {
             console.error("Error updating data:", error);
             toast({
@@ -90,15 +114,15 @@ const EditAdminDialog = ({ admin }: { admin: Admin }) => {
             });
             return;
         }
-
+    
         toast({
             title: "Success",
             description: "Admin updated successfully",
         });
-
+    
         setOpen(false);
         window.location.reload();
-    };
+    };    
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

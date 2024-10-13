@@ -66,25 +66,45 @@ const AddAdminDialog = () => {
     });
 
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-        //check if the user already exists, email
-        const { data: user, error } = await supabase
+        // Check if the email already exists
+        const { data: existingUser, error: emailError } = await supabase
             .from("admin")
             .select("email")
             .eq("email", data.email);
-
-        if (error) {
-            console.error("Error fetching data:", error);
+    
+        if (emailError) {
+            console.error("Error fetching email data:", emailError);
             return;
         }
-
-        if (user && user.length > 0) {
+    
+        if (existingUser && existingUser.length > 0) {
             form.setError("email", {
                 type: "manual",
                 message: "Email already exists",
             });
             return;
         }
-
+    
+        // Check if the username already exists
+        const { data: existingUsername, error: usernameError } = await supabase
+            .from("admin")
+            .select("username")
+            .eq("username", data.username);
+    
+        if (usernameError) {
+            console.error("Error fetching username data:", usernameError);
+            return;
+        }
+    
+        if (existingUsername && existingUsername.length > 0) {
+            form.setError("username", {
+                type: "manual",
+                message: "Username already exists",
+            });
+            return;
+        }
+    
+        // Insert the new admin
         const { error: insertError } = await supabase.from("admin").insert([
             {
                 username: data.username,
@@ -94,19 +114,19 @@ const AddAdminDialog = () => {
                 assign_date: data.assign_date,
             },
         ]);
-
+    
         if (insertError) {
             console.error("Error inserting data:", insertError);
             return;
         }
-
+    
         toast({
             title: "Success",
             description: "Admin added successfully",
         });
-
+    
         window.location.reload();
-    };
+    };    
 
     return (
         <Dialog>
