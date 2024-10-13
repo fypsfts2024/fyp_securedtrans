@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 import {
     Table,
     TableBody,
@@ -10,14 +11,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
-import RequestRestroreButton from "./request-restore-btn";
-import DeleteButton from "./delete-btn";
-import { useSearchParams } from "next/navigation";
-import OtpDialog from "@/components/otp-dialog";
+import { toast } from "@/hooks/use-toast";
+
+interface UserProfile {
+    username: string;
+    email: string;
+}
 
 interface File {
     id: string;
-    user_id: string;
+    user_profile: UserProfile;
     file_name: string;
     file_path: string;
     status: "active" | "deleted" | "blocked" | "otp_sent";
@@ -63,26 +66,9 @@ const formatDateTime = (dateString: string) => {
 const RecycleBinTable = ({ files }: RecycleBinProps) => {
     const [sortField, setSortField] = useState<SortField>("deleted_at");
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-    const searchParams = useSearchParams();
-    const [openPinDialog, setOpenPinDialog] = useState(false);
-    const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-
-    useEffect(() => {
-        const openModal = searchParams.get("openModal");
-        const fileIdParam = searchParams.get("fileId");
-        
-        if (openModal === "true" && fileIdParam) {
-            setSelectedFileId(fileIdParam);
-            setOpenPinDialog(true);
-        }
-    }, [searchParams]);
 
     if (!files || files.length === 0) {
-        return (
-            <div className="w-full flex-1 flex flex-col items-center h-screen sm:max-w-md justify-center gap-2 p-4">
-                <p className="text-muted-foreground">No files found.</p>
-            </div>
-        );
+        return null;
     }
 
     const sortedFiles = [...files].sort((a, b) => {
@@ -118,6 +104,77 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
         );
     };
 
+    const updateFileStatus = async (id: string, status: string) => {
+        const supabase = createClient();
+        const { error } = await supabase
+            .from("recycle_bin")
+            .update({ status })
+            .eq("id", id);
+
+        if (error) {
+            console.error("Error updating file status:", error);
+        }
+
+        toast({
+            title: "Success",
+            description: `File request ${status.replace("_", " ")} successfully`,
+        })
+
+        window.location.reload();
+    };
+
+    const approveRequest = async (id: string) => {
+        //send otp to user
+        const supabase = createClient();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const emailRedirectTo = `${process.env.NEXT_PUBLIC_BASE_URL}/user/recycle-bin?fileId=${id}&openModal=true`;
+        const recipient = files.find((file) => file.id === id)?.files
+            .user_profile.email;
+        const fileId = files.find((file) => file.id === id)?.file_id;
+
+        if (!recipient) {
+            console.error("Recipient email not found");
+            return;
+        }
+
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_API_URL}/email`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    emailRedirectTo,
+                    recipient,
+                    generatedOtp: otp,
+                    fileId,
+                }),
+            }
+        );
+
+        if (!res.ok) {
+            console.error("Failed to send OTP:", res);
+            return;
+        }
+
+        const { error } = await supabase
+            .from("recycle_bin")
+            .update({ status: "restore_approved", otp })
+            .eq("id", id);
+
+        if (error) {
+            console.error("Error updating file status:", error);
+        }
+
+        toast({
+            title: "Success",
+            description: "OTP sent successfully",
+        });
+
+        window.location.reload();
+    };
+
     return (
         <>
             <Table>
@@ -144,54 +201,46 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
                                 <SortIcon field="file_name" />
                             </Button>
                         </TableHead>
+                        <TableHead>Request From</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {sortedFiles.map((file) => (
                         <TableRow key={file.id}>
-                            <TableCell>{file.id}</TableCell>
+                            <TableCell>{file.file_id}</TableCell>
                             <TableCell className="font-medium">
                                 {formatDateTime(file.deleted_at)}
                             </TableCell>
                             <TableCell>{file.files.file_name}</TableCell>
+                            <TableCell>
+                                {file.files.user_profile.username}
+                            </TableCell>
                             <TableCell className="text-right">
-                                <div className="flex flex-row space-x-2 justify-end">
-                                    {file.status === "deleted" && (
-                                        <RequestRestroreButton id={file.id} />
-                                    )}
-
-                                    {file.status === "restore_requested" && (
-                                        <Button className="bg-yellow-500 text-white" disabled>
-                                            Pending
-                                        </Button>
-                                    )}
-
-                                    {file.status === "restore_approved" && (
-                                        <OtpDialog
-                                            fileId={file.id}
-                                        />
-                                    )}
-
-                                    {file.status === "restore_rejected" && (
-                                        <Button className="bg-red-500 text-white" disabled>
-                                            Rejected
-                                        </Button>
-                                    )}
-                                    <DeleteButton id={file.id} />
-                                </div>
+                                <Button onClick={() => approveRequest(file.id)}>
+                                    Approved
+                                </Button>
+                                <Button
+                                    variant={"ghost"}
+                                    onClick={() => {
+                                        const isConfirmed = window.confirm(
+                                            "Are you sure you want to reject this request?"
+                                        );
+                                        if (isConfirmed) {
+                                            updateFileStatus(
+                                                file.id,
+                                                "restore_rejected"
+                                            );
+                                        }
+                                    }}
+                                >
+                                    Reject
+                                </Button>
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
-
-            {openPinDialog && selectedFileId && (
-                <OtpDialog
-                    fileId={selectedFileId}
-                    hideTrigger={true}
-                />
-            )}
         </>
     );
 };

@@ -1,22 +1,9 @@
 import { EmailTemplate } from "@/components/email-template";
 import { Resend } from "resend";
-import { createClient } from "@/utils/supabase/server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
-    const supabase = createClient();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-        return new Response(JSON.stringify({ error: "User not found" }), {
-            status: 404,
-        });
-    }
-
-    const sender = user.email;
     const { emailRedirectTo, recipient, generatedOtp, fileId } = await request.json();
     const recipients = Array.isArray(recipient) ? recipient : [recipient];
 

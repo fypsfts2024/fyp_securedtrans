@@ -84,7 +84,9 @@ export function AdminNav() {
                               key={link.href}
                               href={link.href}
                               className={
-                                  pathname === link.href ? "bg-accent" : ""
+                                  pathname === link.href
+                                      ? "text-foreground"
+                                      : "text-muted-foreground transition-colors hover:text-foreground"
                               }
                           >
                               {link.label}
@@ -95,7 +97,9 @@ export function AdminNav() {
                               key={link.href}
                               href={link.href}
                               className={
-                                  pathname === link.href ? "bg-accent" : ""
+                                  pathname === link.href
+                                      ? "text-foreground"
+                                      : "text-muted-foreground transition-colors hover:text-foreground"
                               }
                           >
                               {link.label}
