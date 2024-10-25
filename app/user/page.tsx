@@ -44,7 +44,7 @@ export default async function UserPage({
         .select("*, files (*, user_profile(*))")
         .eq("shared_with_user_id", user.id)
         .neq("files.status", "deleted")
-        .not("files", "is", null);
+        .not("files", "is", null); // This is a workaround for a bug in Supabase
 
     if (searchParams.search) {
         query = query.ilike("files.file_name", `%${searchParams.search}%`);
