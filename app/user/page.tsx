@@ -41,11 +41,10 @@ export default async function UserPage({
 
     let query = supabase
         .from("file_shares")
-        .select(
-            `*, files ( *,user_profile(*) )`
-        )
+        .select("*, files (*, user_profile(*))")
         .eq("shared_with_user_id", user.id)
-        .neq("files.status", "deleted");
+        .neq("files.status", "deleted")
+        .not("files", "is", null);
 
     if (searchParams.search) {
         query = query.ilike("files.file_name", `%${searchParams.search}%`);
