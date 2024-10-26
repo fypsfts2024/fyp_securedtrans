@@ -7,6 +7,7 @@ import AdminTable from "../components/admin-info";
 
 export default function PrimaryAdminPage() {
     const { admin } = useAuth();
+    console.log(admin);
 
     if (!admin) {
         window.location.href = "/admin/sign-in";

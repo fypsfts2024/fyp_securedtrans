@@ -484,7 +484,10 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                                 option.disable && 'cursor-default text-muted-foreground',
                               )}
                             >
-                              {option.label}
+                              <div className="flex flex-col">
+                                {option.label}
+                                <p className="text-muted-foreground text-xs">User ID: {option.value}</p>
+                              </div>
                             </CommandItem>
                           );
                         })}

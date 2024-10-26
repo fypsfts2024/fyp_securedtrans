@@ -55,7 +55,7 @@ export const signUpAction = async (formData: FormData) => {
     // Handle post-sign-up logic (e.g., success message)
     return encodedRedirect(
         "success",
-        "/sign-up",
+        "/sign-in",
         "Thanks for signing up! Please check your email for a verification link."
     );
 };
@@ -145,7 +145,7 @@ export const resetPasswordAction = async (formData: FormData) => {
         encodedRedirect(
             "error",
             "/user/reset-password",
-            "Password update failed"
+            "Password update failed: " + error.message
         );
     }
 

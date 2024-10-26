@@ -45,11 +45,15 @@ import { toast } from "@/hooks/use-toast";
 
 const FormSchema = z
     .object({
-        username: z.string(),
+        username: z.string().min(3, "Username must be at least 3 characters long"),
         assign_date: z.date(),
         email: z.string().email(),
-        password: z.string().min(8),
-        confirm_password: z.string().min(8),
+        password: z
+            .string()
+            .min(8, "Password must be at least 8 characters long")
+            .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/, 
+                "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."),
+        confirm_password: z.string().min(8, "Confirm password must be at least 8 characters long"),
         role: z.string(),
     })
     .refine((data) => data.password === data.confirm_password, {

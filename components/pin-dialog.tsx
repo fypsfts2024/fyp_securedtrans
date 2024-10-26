@@ -64,7 +64,10 @@ const PinDialog: React.FC<PinDialogProps> = ({
     onFailure,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [attempts, setAttempts] = useState(0);
+    const [attempts, setAttempts] = useState(() => {
+        const savedAttempts = localStorage.getItem('pinAttempts');
+        return savedAttempts ? parseInt(savedAttempts, 10) : 0;
+    });
     const [status, setStatus] = useState(initialStatus);
     const [fileId, setFileId] = useState<string | null>(propFileId || null);
     const [triggerHidden, setTriggerHidden] = useState(hideTrigger || false);
@@ -110,9 +113,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
             if (isPinCorrect) {
                 setIsOpen(false);
                 onSuccess();
+                localStorage.removeItem('pinAttempts'); // Reset attempts on success
             } else {
                 const newAttempts = attempts + 1;
                 setAttempts(newAttempts);
+                localStorage.setItem('pinAttempts', newAttempts.toString()); // Save to localStorage
                 if (newAttempts >= 3) {
                     await updateFileStatus("blocked");
                     setStatus("blocked");
@@ -126,6 +131,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 await updateFileStatus("active");
                 setIsOpen(false);
                 onSuccess();
+                localStorage.removeItem('pinAttempts'); // Reset attempts on success
             } else {
                 await updateFileStatus("deleted");
                 setIsOpen(false);
@@ -161,6 +167,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
             setStatus(
                 newStatus as "active" | "deleted" | "blocked" | "otp_sent"
             );
+            if (newStatus === "blocked") {
+                localStorage.removeItem('pinAttempts'); // Clear attempts on block
+            }
         }
     }
 
@@ -268,17 +277,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     <AlertDialogFooter>
                         <AlertDialogCancel
                             onClick={() =>
-                                (window.location.href = `/user/library`)
+                                (window.location.href = "/home")
                             }
                         >
-                            OK, I understand
+                            Go back to Home
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() =>
-                                (window.location.href = `/user/recycle-bin`)
-                            }
-                        >
-                            Go To Recycle Bin
+                        <AlertDialogAction onClick={onFailure}>
+                            Request Restore
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

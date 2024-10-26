@@ -34,7 +34,9 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                             <Label htmlFor="username">Username</Label>
                             <Input
                                 name="username"
-                                placeholder="Your username"
+                                placeholder="John Doe"
+                                pattern="^[a-zA-Z0-9_]{3,20}$"
+                                title="Username must be 3-20 characters long and contain only letters, numbers, and underscores."
                                 required
                             />
                         </div>
@@ -42,9 +44,9 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                             <Label htmlFor="phone">Phone</Label>
                             <Input
                                 name="phone"
-                                placeholder="Your mobile number"
+                                placeholder="0123456789"
                                 pattern="^(?:\+?601|01)[0-9]{8,9}$"
-                                title="Please enter a valid Malaysian mobile number."
+                                title="Phone number format incorrect. Eg: +60123456789/0123456789."
                                 required
                             />
                         </div>

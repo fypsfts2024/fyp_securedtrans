@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback} from "react";
 import { useDropzone, FileWithPath } from "react-dropzone";
 import {
     Dialog,
@@ -171,8 +171,7 @@ const UploadFileDialog: React.FC<UploadFileDialogProps> = ({
                     <Button variant="outline">Upload File</Button>
                 ) : (
                     <Button
-                        variant="ghost"
-                        className="p-0"
+                        className="bg-transparent hover:bg-transparent text-primary px-2"
                         onClick={(event) => {
                             event.stopPropagation();
                         }}

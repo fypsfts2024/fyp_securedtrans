@@ -70,6 +70,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
     const [filename, setFilename] = useState<string>("");
     const [created_at, setCreated_at] = useState<string>("");
     const [users, setUsers] = useState<Option[]>([]);
+    const [loading, setLoading] = useState(false);
     const [isTriggered, setIsTriggered] = useState(false);
 
     useEffect(() => {
@@ -201,6 +202,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
     };
 
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+        setLoading(true);
         const errors: string[] = [];
         const expiresIn = data.date
             ? new Date(data.date).getTime() - Date.now()
@@ -262,6 +264,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 description: "An unexpected error occurred. Please try again.",
                 variant: "destructive",
             });
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
@@ -433,7 +437,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                                 <QRCode fileId={fileId} />
                             </div>
                         </div>
-                        <Button type="submit">Share Now</Button>
+                        <Button type="submit" disabled={loading}>
+                            {loading ? "Sharing..." : "Share Now"}
+                        </Button>
                     </form>
                 </Form>
             </DialogContent>

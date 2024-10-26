@@ -37,6 +37,7 @@ const InputSchema = z.object({
 interface SharedPinDialogProps {
     name: string;
     fileId?: string;
+    shared?: boolean;
     status: "active" | "deleted" | "blocked" | "otp_sent";
     onSuccess: () => void;
     onFailure: () => void;
@@ -45,12 +46,18 @@ interface SharedPinDialogProps {
 const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
     name,
     fileId: propFileId,
+    shared,
     status: initialStatus,
     onSuccess,
     onFailure,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [attempts, setAttempts] = useState(0);
+    const [attempts, setAttempts] = useState(() => {
+        // Get attempts from localStorage or set to 0
+        const savedAttempts = localStorage.getItem("sharedPinAttempts");
+        return savedAttempts ? parseInt(savedAttempts, 10) : 0;
+    });
+    const [sharedFile, setSharedFile] = useState(shared || false);
     const [status, setStatus] = useState(initialStatus);
     const [fileId, setFileId] = useState<string | null>(propFileId || null);
 
@@ -64,6 +71,10 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
     useEffect(() => {
         setFileId(propFileId || null);
     }, [propFileId]);
+
+    useEffect(() => {
+        localStorage.setItem("sharedPinAttempts", attempts.toString());
+    }, [attempts]);
 
     async function onSubmit(data: z.infer<typeof InputSchema>) {
         if (!fileId) {
@@ -79,6 +90,7 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
             if (isPinCorrect) {
                 setIsOpen(false);
                 onSuccess();
+                setAttempts(0); // Reset attempts on success
             } else {
                 const newAttempts = attempts + 1;
                 setAttempts(newAttempts);
@@ -104,7 +116,7 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
                 title: "Error",
                 description: "Unable to retrieve user information",
             });
-            return;
+            return false;
         }
 
         const { data: sharedFile, error: sharedError } = await supabase
@@ -124,11 +136,7 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
             return false;
         }
 
-        if (sharedFile.pin === pin) {
-            return true;
-        }
-
-        return false;
+        return sharedFile.pin === pin;
     }
 
     async function leaveFile() {
@@ -182,7 +190,7 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
                             Enter PIN
                         </DialogTitle>
                         <DialogDescription>
-                            Enter your 6-digit PIN to access the file.
+                            Enter the 6-digit PIN provided by the file owner.
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
@@ -196,7 +204,6 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col justify-center items-center">
                                         <FormLabel>
-                                            {" "}
                                             {status === "otp_sent"
                                                 ? "OTP"
                                                 : "PIN"}

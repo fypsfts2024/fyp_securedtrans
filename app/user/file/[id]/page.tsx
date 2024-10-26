@@ -80,18 +80,20 @@ function renderFileContent(file: FileData): JSX.Element {
         case "docx":
             return (
                 <div>
-                    <p>
-                        This is a Word document. You can download it using the
-                        link below:
-                    </p>
-                    <a
-                        href={file.file_path}
-                        download
-                        className="text-blue-600 hover:underline"
-                    >
-                        Download Word Document
-                    </a>
+                    <iframe
+                        src={`https://docs.google.com/gview?url=${encodeURIComponent(file.file_path)}&embedded=true`}
+                        className="w-full h-screen"
+                        frameBorder="0"
+                    />
                 </div>
+            );
+        case "txt":
+            return (
+                <iframe
+                    src={file.file_path}
+                    className="w-full h-96"
+                    title={file.file_name}
+                />
             );
         default:
             return (
@@ -165,12 +167,10 @@ export default async function FilePage({
                                 </DropdownMenuItem>
                                 {!isShared && (
                                     <>
-                                        <DropdownMenuItem>
-                                            <UploadFileDialog
-                                                action="update"
-                                                fileId={id}
-                                            />
-                                        </DropdownMenuItem>
+                                        <UploadFileDialog
+                                            action="update"
+                                            fileId={id}
+                                        />
                                         <DropdownMenuItem>
                                             <DeleteButton fileId={id} />
                                         </DropdownMenuItem>

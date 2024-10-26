@@ -8,6 +8,7 @@ import { updateProfileAction } from "./profile-action";
 import { AvatarUpdate } from "@/components/avatar-update";
 import AccountStatusSwitch from "./components/acc-status-switch";
 import { redirect } from "next/navigation";
+import CopyToClipboard from "@/components/copy-text-components";
 
 export default async function Profile({
     searchParams,
@@ -49,11 +50,11 @@ export default async function Profile({
                     </header>
                     <form className="grid gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
                         <div className="rounded-xl bg-muted/50 p-4 h-fit">
-                            <AvatarUpdate avatarUrl={data?.avatar}/>
+                            <AvatarUpdate avatarUrl={data?.avatar} />
                             <div className="text-xs mt-2 flex flex-col space-y-3">
                                 <div>
                                     <p>User ID</p>
-                                    <p className="font-medium">{user?.id}</p>
+                                    <CopyToClipboard text={user?.id} />
                                 </div>
                                 <div>
                                     <p>Last Log Date</p>
@@ -110,6 +111,8 @@ export default async function Profile({
                                                 name="username"
                                                 type="text"
                                                 placeholder="John Doe"
+                                                pattern="^[a-zA-Z0-9_]{3,20}$"
+                                                title="Username must be 3-20 characters long and contain only letters, numbers, and underscores."
                                                 defaultValue={
                                                     data?.username || ""
                                                 }
@@ -152,7 +155,7 @@ export default async function Profile({
                                                 placeholder="+60123456789"
                                                 defaultValue={data?.phone || ""}
                                                 pattern="^(?:\+?601|01)[0-9]{8,9}$"
-                                                title="Please enter a valid Malaysian mobile number."
+                                                title="Phone number format incorrect. Eg: +60123456789/0123456789."
                                             />
                                         </div>
                                     </div>
@@ -169,7 +172,9 @@ export default async function Profile({
                                         <Label htmlFor="temperature">
                                             Account Status
                                         </Label>
-                                        <AccountStatusSwitch initialStatus={data?.account_status} />
+                                        <AccountStatusSwitch
+                                            initialStatus={data?.account_status}
+                                        />
                                     </div>
                                 </fieldset>
                                 <SubmitButton
