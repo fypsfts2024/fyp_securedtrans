@@ -14,7 +14,11 @@ export const updateProfileAction = async (formData: FormData) => {
     const address = formData.get("address") as string;
     const avatarFile = formData.get("avatar") as File | null;
     const acc_status = formData.get("acc-status") as string;
-    const last_updated = new Date().toISOString();
+    const last_updated = new Date(
+        new Date().toLocaleString('en-US', {
+          timeZone: 'Asia/Kuala_Lumpur'
+        })
+      ).toISOString();
 
     let avatar_url: string | null = null;
 
