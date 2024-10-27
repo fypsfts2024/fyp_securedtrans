@@ -1,24 +1,29 @@
-import Image from "next/image";
 export default async function Index() {
     return (
         <>
-            <div className="flex flex-col gap-16 items-center min-h-screen justify-center">
-                <Image
-                    src="/hero-2.png"
-                    alt="Logo"
-                    width={300}
-                    height={300}
+            <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
+                <img
+                    src="/STMainpage.png"
+                    alt=""
+                    className="w-full lg:w-[70%] lg:min-h-screen object-cover"
                 />
-                {/* <Image
-                    src="/hero.png"
-                    alt="Logo"
-                    width={300}
-                    height={300}
-                /> */}
-                <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
-                    Your files, your control.
-                </p>
-                <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
+                <div className="w-full lg:w-[30%] lg:px-0 px-10 italic uppercase">
+                    <h1
+                        className="text-3xl lg:text-5xl !leading-tight text-left mb-2 font-bold"
+                    >
+                        Your <span className="text-[#b1d4eb]">files</span>
+                        <br />
+                        your <span className="text-[#edeb99]">control</span>
+                    </h1>
+                    <p className="lg:pe-32">
+                        Empower your data with SecuredTrans. <br />
+                        We protect your files, encrypt sensitive information,
+                        and ensure secure delivery. Take charge of your privacy{" "}
+                        <br />
+                        <br />
+                        —your files deserve the best.
+                    </p>
+                </div>
             </div>
         </>
     );

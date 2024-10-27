@@ -3,6 +3,7 @@ import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/password-input";
 
 export default async function ResetPassword({
   searchParams,
@@ -16,18 +17,11 @@ export default async function ResetPassword({
         Please enter your new password below.
       </p>
       <Label htmlFor="password">New password</Label>
-      <Input
-        type="password"
-        name="password"
-        placeholder="New password"
-        required
-      />
+      <PasswordInput name="password" placeholder="New password" />
       <Label htmlFor="confirmPassword">Confirm password</Label>
-      <Input
-        type="password"
+      <PasswordInput
         name="confirmPassword"
         placeholder="Confirm password"
-        required
       />
       <SubmitButton formAction={resetPasswordAction}>
         Reset password

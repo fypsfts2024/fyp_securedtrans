@@ -116,6 +116,7 @@ export default async function Profile({
                                                 defaultValue={
                                                     data?.username || ""
                                                 }
+                                                required
                                             />
                                         </div>
                                         <div className="grid gap-3">
@@ -156,6 +157,7 @@ export default async function Profile({
                                                 defaultValue={data?.phone || ""}
                                                 pattern="^(?:\+?601|01)[0-9]{8,9}$"
                                                 title="Phone number format incorrect. Eg: +60123456789/0123456789."
+                                                required
                                             />
                                         </div>
                                     </div>

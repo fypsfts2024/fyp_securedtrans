@@ -54,7 +54,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                     <Label htmlFor="email">Email</Label>
                     <Input
                         name="email"
-                        placeholder="you@example.com"
+                        placeholder="john@example.com"
                         required
                     />
                     <Label htmlFor="password">Password</Label>

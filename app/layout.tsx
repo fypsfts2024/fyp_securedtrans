@@ -50,14 +50,15 @@ export default function RootLayout({
                 >
                     <ClientSideAuthProvider>
                         <main className="min-h-screen flex flex-col items-center">
-                            <div className="flex-1 w-full flex flex-col gap-10 items-center">
+                            <div className="flex-1 w-full flex flex-col items-center h-full">
+                                {/* <div className="flex-1 w-full flex flex-col gap-10 items-center"> */}
                                 <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
                                     <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
                                         <div className="flex gap-5 items-center font-semibold">
                                             <Link
                                                 href={
                                                     isAdminRoute
-                                                        ? "/admin/prime-admin"
+                                                        ? ""
                                                         : "/"
                                                 }
                                                 className="flex items-center gap-2"
@@ -89,9 +90,10 @@ export default function RootLayout({
                                         </div>
                                     </div>
                                 </nav>
-                                <div className="flex flex-col gap-20 max-w-5xl px-3 w-full">
+                                {/* <div className="flex flex-1 items-center justify-center w-full h-full"> */}
+                                    {/* <div className="flex flex-col gap-20 max-w-5xl px-3 w-full"> */}
                                     {children}
-                                </div>
+                                {/* </div> */}
                             </div>
                         </main>
                         <Toaster />

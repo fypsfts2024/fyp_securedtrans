@@ -34,6 +34,21 @@ export const signUpAction = async (formData: FormData) => {
         );
     }
 
+    //check if email is already in use
+    const { data: existingUser, error: existingUserError } = await supabase
+        .from("user_profile")
+        .select("*")
+        .eq("email", email)
+        .single();
+
+    if (existingUser || existingUserError) {
+        return encodedRedirect(
+            "error",
+            "/sign-up",
+            "Account already exists. Please log in or use a different email to register.."
+        );
+    }
+
     // Sign up user using Supabase
     const { error, data: signUpData } = await supabase.auth.signUp({
         email,

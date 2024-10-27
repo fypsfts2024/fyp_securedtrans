@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback} from "react";
+import React, { useState, useCallback } from "react";
 import { useDropzone, FileWithPath } from "react-dropzone";
 import {
     Dialog,
@@ -33,15 +33,25 @@ const UploadFileDialog: React.FC<UploadFileDialogProps> = ({
     const [progress, setProgress] = useState<number>(0);
     const [statusText, setStatusText] = useState<string>("");
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        setFiles(
-            acceptedFiles.map((file) =>
-                Object.assign(file, {
-                    preview: URL.createObjectURL(file),
-                })
-            ) as FileWithPreview[]
-        );
-    }, []);
+    const onDrop = useCallback(
+        (acceptedFiles: File[]) => {
+            if (action === "update" && acceptedFiles.length > 1) {
+                setError("Only one file can be selected in update mode.");
+                return;
+            }
+            setFiles(
+                acceptedFiles
+                    .slice(0, action === "update" ? 1 : undefined)
+                    .map((file) =>
+                        Object.assign(file, {
+                            preview: URL.createObjectURL(file),
+                        })
+                    ) as FileWithPreview[]
+            );
+            setError(null);
+        },
+        [action]
+    );
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -171,7 +181,8 @@ const UploadFileDialog: React.FC<UploadFileDialogProps> = ({
                     <Button variant="outline">Upload File</Button>
                 ) : (
                     <Button
-                        className="bg-transparent hover:bg-transparent text-primary px-2"
+                        variant={"ghost"}
+                        className="px-2 w-full justify-start"
                         onClick={(event) => {
                             event.stopPropagation();
                         }}
