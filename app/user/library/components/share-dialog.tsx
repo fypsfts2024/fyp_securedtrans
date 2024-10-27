@@ -440,6 +440,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                         <Button type="submit" disabled={loading}>
                             {loading ? "Sharing..." : "Share Now"}
                         </Button>
+                        <p className="text-sm text-center">
+                            Note: Files already shared with the recipient cannot
+                            be shared again.
+                        </p>
                     </form>
                 </Form>
             </DialogContent>

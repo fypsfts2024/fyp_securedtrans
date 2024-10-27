@@ -70,7 +70,8 @@ export default async function Library({
                     <Button type="submit">Search</Button>
                 </form>
             </div>
-            <div className="w-full flex flex-col gap-2 items-center">
+
+            <div className="w-full flex flex-col gap-2 items-center flex-grow">
                 <h2 className="font-bold text-2xl mb-4 text-center">
                     Recycle Bin
                 </h2>
@@ -82,6 +83,10 @@ export default async function Library({
                 ) : (
                     <RecycleBinTable files={files || []} />
                 )}
+            </div>
+
+            <div className="text-sm text-center mt-auto">
+                Note: Deleted files will be automatically removed after 30 days.
             </div>
         </div>
     );

@@ -42,10 +42,19 @@ export const signUpAction = async (formData: FormData) => {
         .single();
 
     if (existingUser || existingUserError) {
+        //if account banned
+        const { is_banned, message } = await checkUserBanStatus(
+            existingUser?.id as string
+        );
+
+        if (is_banned) {
+            return encodedRedirect("error", "/sign-up", message);
+        }
+
         return encodedRedirect(
             "error",
             "/sign-up",
-            "Account already exists. Please log in or use a different email to register.."
+            "Account already exists. Please log in or use a different email to register."
         );
     }
 
@@ -182,7 +191,7 @@ export async function signInWithGoogle() {
                 access_type: "offline",
                 prompt: "consent",
             },
-            redirectTo: `${headers().get("origin")}/auth/callback`
+            redirectTo: `${headers().get("origin")}/auth/callback`,
         },
     });
 
@@ -217,4 +226,63 @@ export const AdminSignInAction = async (formData: FormData) => {
         success: true,
         admin: data,
     };
+};
+
+interface BanResponse {
+    success: boolean;
+    banned_until?: string;
+    message: string;
+}
+
+interface BanStatusResponse {
+    is_banned: boolean;
+    banned_until: string | null;
+    message: string;
+}
+
+export const banUserAction = async (userId: string): Promise<BanResponse> => {
+    const supabase = createClient();
+
+    try {
+        const { data, error } = await supabase.rpc("ban_user", {
+            user_id: userId,
+        });
+
+        if (error) throw error;
+
+        return data as BanResponse;
+    } catch (error) {
+        console.error("Error banning user:", error);
+        return {
+            success: false,
+            message:
+                error instanceof Error ? error.message : "Failed to ban user",
+        };
+    }
+};
+
+export const checkUserBanStatus = async (
+    userId: string
+): Promise<BanStatusResponse> => {
+    const supabase = createClient();
+
+    try {
+        const { data, error } = await supabase.rpc("is_user_banned", {
+            user_id: userId,
+        });
+
+        if (error) throw error;
+
+        return data as BanStatusResponse;
+    } catch (error) {
+        console.error("Error checking ban status:", error);
+        return {
+            is_banned: false,
+            banned_until: null,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to check ban status",
+        };
+    }
 };

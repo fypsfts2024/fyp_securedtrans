@@ -124,6 +124,10 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     window.location.reload();
                 }
                 form.reset();
+                toast({
+                    title: "Incorrect PIN",
+                    description: `You have ${3 - newAttempts} attempts remaining.`
+                });
             }
         } else if (status === "otp_sent") {
             const isOtpCorrect = await validateOtp(data.value);

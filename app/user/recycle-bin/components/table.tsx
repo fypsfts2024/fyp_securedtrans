@@ -119,7 +119,7 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
     };
 
     return (
-        <>
+        <div className="w-full min-h-96">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -192,7 +192,7 @@ const RecycleBinTable = ({ files }: RecycleBinProps) => {
                     hideTrigger={true}
                 />
             )}
-        </>
+        </div>
     );
 };
 

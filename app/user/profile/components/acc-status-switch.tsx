@@ -12,6 +12,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import DeactivatePinDialog from "@/components/deactivate-pin-dialog";
+import { banUserAction } from "@/lib/actions";
+import { createClient } from "@/utils/supabase/client";
 
 type AccountStatusSwitchProps = {
     initialStatus: "active" | "inactive";
@@ -20,6 +23,8 @@ type AccountStatusSwitchProps = {
 const AccountStatusSwitch = ({ initialStatus }: AccountStatusSwitchProps) => {
     const [isActive, setIsActive] = useState(initialStatus === "active");
     const [showDialog, setShowDialog] = useState(false);
+    const [showDeactivatePinDialog, setShowDeactivatePinDialog] =
+        useState(false);
 
     const handleSwitchChange = (checked: boolean) => {
         if (checked) {
@@ -34,14 +39,26 @@ const AccountStatusSwitch = ({ initialStatus }: AccountStatusSwitchProps) => {
     const handleConfirmDeactivation = () => {
         setIsActive(false);
         setShowDialog(false);
+        setShowDeactivatePinDialog(true); // Show the DeactivatePinDialog
     };
+
+    const handleBanUser = async () => {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        const response = await banUserAction(user?.id as string);
+        if (response.success) {
+            supabase.auth.signOut();
+            //rediect to home page
+            window.location.href = "/";
+        } else {
+            // Handle ban failure
+            console.error("Failed to ban user:", response.message);
+        }
+    }
 
     return (
         <div>
-            <Switch
-                checked={isActive}
-                onCheckedChange={handleSwitchChange}
-            />
+            <Switch checked={isActive} onCheckedChange={handleSwitchChange} />
             <input
                 type="hidden"
                 name="acc-status"
@@ -67,6 +84,19 @@ const AccountStatusSwitch = ({ initialStatus }: AccountStatusSwitchProps) => {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {showDeactivatePinDialog && (
+                <DeactivatePinDialog
+                    open={showDeactivatePinDialog}
+                    onClose={() => setShowDeactivatePinDialog(false)}
+                    onSuccess={() => {
+                        handleBanUser();
+                    }}
+                    onFailure={() => {
+                        // Handle account deactivation after 3 failed attempts
+                    }}
+                />
+            )}
         </div>
     );
 };
