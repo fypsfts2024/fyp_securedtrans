@@ -63,6 +63,7 @@ export default async function Profile({
                                             ? new Date(
                                                   user.last_sign_in_at
                                               ).toLocaleString("en-US", {
+                                                  timeZone: "Asia/Kuala_Lumpur",
                                                   year: "numeric",
                                                   month: "long",
                                                   day: "numeric",
