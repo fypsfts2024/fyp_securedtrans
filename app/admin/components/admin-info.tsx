@@ -53,7 +53,29 @@ const AdminTable = () => {
     }
 
     if (!admins.length) {
-        return <div>No admin found</div>;
+        return (
+            <div className="flex flex-col">
+                <h1 className="font-semibold">Secondary Admin Information</h1>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>No.</TableHead>
+                            <TableHead>SA ID</TableHead>
+                            <TableHead>Username</TableHead>
+                            <TableHead>Created Date</TableHead>
+                            <TableHead>Role</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center">
+                                No secondary admin found
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        );
     }
 
     return (
@@ -78,13 +100,11 @@ const AdminTable = () => {
                                 <TableCell className="font-medium">
                                     {admin.id}
                                 </TableCell>
+                                <TableCell>{admin.username}</TableCell>
                                 <TableCell>
-                                    {admin.username}
+                                    {formatDateTime(admin.created_at)}
                                 </TableCell>
-                                <TableCell>{formatDateTime(admin.created_at)}</TableCell>
-                                <TableCell>
-                                    {admin.role}
-                                </TableCell>
+                                <TableCell>{admin.role}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -92,7 +112,8 @@ const AdminTable = () => {
                 <div className="ml-auto mt-4">
                     <Button
                         onClick={() =>
-                            (window.location.href = "/admin/prime-admin/manage-admin")
+                            (window.location.href =
+                                "/admin/prime-admin/manage-admin")
                         }
                     >
                         View All

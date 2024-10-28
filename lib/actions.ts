@@ -95,7 +95,7 @@ export const signInAction = async (formData: FormData) => {
     });
 
     if (error) {
-        return encodedRedirect("error", "/sign-in", error.message);
+        return encodedRedirect("error", "/sign-in", "This account has been deactivated. Please register a new account to continue.");
     }
 
     return redirect("/user");

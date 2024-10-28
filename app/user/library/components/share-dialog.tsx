@@ -36,6 +36,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import QRCode from "./qr-code";
 import { toast } from "@/hooks/use-toast";
+import { checkUserBanStatus } from "@/lib/actions";
 
 interface ShareDialogProps {
     isOpen: boolean;
@@ -100,24 +101,35 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         const {
             data: { user },
         } = await supabase.auth.getUser();
-
+    
         const { data, error } = await supabase
             .from(`user_profile`)
             .select(`*`)
             .neq("id", user?.id);
-
+    
         const { data: sharedUsers, error: sharedError } = await supabase
             .from("file_shares")
             .select("*")
             .eq("file_id", fileId);
-
+    
         if (error) {
             console.error("Error fetching users:", error);
             return;
         }
-
+    
+        const filteredUsers = await Promise.all(
+            data.map(async (user: any) => {
+                const banStatus = await checkUserBanStatus(user.id);
+                if (banStatus.is_banned) {
+                    return null; // Filter out banned users
+                }
+                return user;
+            })
+        );
+    
         setUsers(
-            data
+            filteredUsers
+                .filter((user: any) => user !== null) // Remove null entries from banned users
                 .filter((user: any) => {
                     if (sharedUsers) {
                         return !sharedUsers.some(

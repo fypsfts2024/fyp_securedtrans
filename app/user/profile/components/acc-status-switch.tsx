@@ -15,6 +15,7 @@ import {
 import DeactivatePinDialog from "@/components/deactivate-pin-dialog";
 import { banUserAction } from "@/lib/actions";
 import { createClient } from "@/utils/supabase/client";
+import { set } from "date-fns";
 
 type AccountStatusSwitchProps = {
     initialStatus: "active" | "inactive";
@@ -37,14 +38,17 @@ const AccountStatusSwitch = ({ initialStatus }: AccountStatusSwitchProps) => {
     };
 
     const handleConfirmDeactivation = () => {
-        setIsActive(false);
         setShowDialog(false);
-        setShowDeactivatePinDialog(true); // Show the DeactivatePinDialog
+        setShowDialog(false);
+        setShowDeactivatePinDialog(true);
     };
 
     const handleBanUser = async () => {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        setIsActive(false);
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
         const response = await banUserAction(user?.id as string);
         if (response.success) {
             supabase.auth.signOut();
@@ -54,7 +58,13 @@ const AccountStatusSwitch = ({ initialStatus }: AccountStatusSwitchProps) => {
             // Handle ban failure
             console.error("Failed to ban user:", response.message);
         }
-    }
+    };
+
+    const handleDialogClose = () => {
+        setShowDialog(false);
+        setShowDeactivatePinDialog(false);
+        setIsActive(true);
+    };
 
     return (
         <div>
@@ -88,12 +98,12 @@ const AccountStatusSwitch = ({ initialStatus }: AccountStatusSwitchProps) => {
             {showDeactivatePinDialog && (
                 <DeactivatePinDialog
                     open={showDeactivatePinDialog}
-                    onClose={() => setShowDeactivatePinDialog(false)}
+                    onClose={() => handleDialogClose()}
                     onSuccess={() => {
                         handleBanUser();
                     }}
                     onFailure={() => {
-                        // Handle account deactivation after 3 failed attempts
+                        handleDialogClose();
                     }}
                 />
             )}

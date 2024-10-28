@@ -57,12 +57,15 @@ const DeactivatePinDialog: React.FC<DeactivatePinDialogProps> = ({
         defaultValues: { value: "" },
     });
 
-    const supabase = createClient();
-
     useEffect(() => {
         if (attempts >= 3) {
+            toast({
+                title: "Attempts Exceeded",
+                description:
+                    "You have exceeded the maximum number of attempts, please try again tomorrow.",
+            });
             onFailure();
-            localStorage.removeItem("pinAttempts");
+            // localStorage.removeItem("pinAttempts");
         }
     }, [attempts, onFailure]);
 
@@ -70,11 +73,12 @@ const DeactivatePinDialog: React.FC<DeactivatePinDialogProps> = ({
         if (attempts >= 3) {
             toast({
                 title: "Attempts Exceeded",
-                description: "You have exceeded the maximum number of attempts.",
+                description:
+                    "You have exceeded the maximum number of attempts, please try again tomorrow.",
             });
             return;
         }
-        
+
         const isPinCorrect = await validatePinAction(data.value);
         if (isPinCorrect) {
             onSuccess();
@@ -88,13 +92,26 @@ const DeactivatePinDialog: React.FC<DeactivatePinDialogProps> = ({
             form.reset();
             toast({
                 title: "Incorrect PIN",
-                description: `You have ${3 - newAttempts} attempts remaining.`
+                description: `You have ${3 - newAttempts} attempts remaining.`,
             });
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                    document.body.style.pointerEvents = ''
+                    onClose();
+                }
+                setTimeout(() => {
+                    if (!open) {
+                        document.body.style.pointerEvents = ''
+                    }
+                }, 100)
+            }}
+        >
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Enter PIN</DialogTitle>
@@ -117,7 +134,10 @@ const DeactivatePinDialog: React.FC<DeactivatePinDialogProps> = ({
                                         <InputOTP maxLength={6} {...field}>
                                             <InputOTPGroup>
                                                 {[...Array(6)].map((_, i) => (
-                                                    <InputOTPSlot key={i} index={i} />
+                                                    <InputOTPSlot
+                                                        key={i}
+                                                        index={i}
+                                                    />
                                                 ))}
                                             </InputOTPGroup>
                                         </InputOTP>

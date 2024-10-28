@@ -176,6 +176,8 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
             title: "You have left the file",
             description: "To access the file again, you will need to ask for a new share link.",
         });
+
+        setAttempts(0);
     }
 
     return (

@@ -58,7 +58,27 @@ const UnblockTable = () => {
     }
 
     if (!files.length) {
-        return <div>No files found</div>;
+        return (
+            <div className="flex flex-col">
+                <h1 className="font-semibold">Request To Unblock File</h1>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>No.</TableHead>
+                            <TableHead>Date Time</TableHead>
+                            <TableHead>Filename</TableHead>
+                            <TableHead>Owner</TableHead>
+                            <TableHead>Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center">No records found</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        );
     }
 
     return (

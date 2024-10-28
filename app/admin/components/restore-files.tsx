@@ -56,7 +56,28 @@ const RestoreTable = () => {
     }
 
     if (!files.length) {
-        return <div>No files found</div>;
+        return (
+            <>
+                <div className="flex flex-col">
+                    <h1 className="font-semibold">Request To Restore File</h1>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>No.</TableHead>
+                                <TableHead>Deleted at</TableHead>
+                                <TableHead>Filename</TableHead>
+                                <TableHead>Request From</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center">No data</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+            </>
+        );
     }
 
     return (
@@ -89,7 +110,11 @@ const RestoreTable = () => {
                     </TableBody>
                 </Table>
                 <div className="ml-auto mt-4">
-                    <Button onClick={() => window.location.href="/admin/restore"}>
+                    <Button
+                        onClick={() =>
+                            (window.location.href = "/admin/restore")
+                        }
+                    >
                         View All
                     </Button>
                 </div>

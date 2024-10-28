@@ -56,7 +56,27 @@ const AuditLogTable = () => {
     }
 
     if (!files.length) {
-        return <div>No files found</div>;
+        return (
+            <div className="flex flex-col">
+                <h1 className="font-semibold">Audit Log</h1>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>No.</TableHead>
+                            <TableHead>Date Time</TableHead>
+                            <TableHead>Username</TableHead>
+                            <TableHead>Filename</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center">No logs available</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        );
     }
 
     return (
@@ -85,9 +105,7 @@ const AuditLogTable = () => {
                                     {file.user_profile.username}
                                 </TableCell>
                                 <TableCell>{file.files.file_name}</TableCell>
-                                <TableCell>
-                                    {file.action}
-                                </TableCell>
+                                <TableCell>{file.action}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
