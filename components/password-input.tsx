@@ -16,7 +16,7 @@ export function PasswordInput({ name, placeholder }: PasswordInputProps) {
                 type={isOpen ? "text" : "password"}
                 name={name}
                 placeholder={placeholder}
-                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$" //passwd format incorrect，8 character，uppercase，number and symbol
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._])[A-Za-z\d@$!%*?&._]{8,}$"
                 title="Password must contain at least 8 characters, including uppercase, lowercase, numbers, and symbols." //passwd format
                 required
                 className="mb-3"

@@ -34,15 +34,15 @@ export const signUpAction = async (formData: FormData) => {
         );
     }
 
-    //check if email is already in use
     const { data: existingUser, error: existingUserError } = await supabase
         .from("user_profile")
         .select("*")
         .eq("email", email)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
-    if (existingUser || existingUserError) {
-        //if account banned
+    if (existingUser) {
+        // Check if the account is banned
         const { is_banned, message } = await checkUserBanStatus(
             existingUser?.id as string
         );
@@ -55,6 +55,14 @@ export const signUpAction = async (formData: FormData) => {
             "error",
             "/sign-up",
             "Account already exists. Please log in or use a different email to register."
+        );
+    }
+
+    if (existingUserError) {
+        return encodedRedirect(
+            "error",
+            "/sign-up",
+            `${existingUserError.message}`
         );
     }
 
@@ -93,9 +101,14 @@ export const signInAction = async (formData: FormData) => {
         email,
         password,
     });
+    console.log("error", error);
 
     if (error) {
-        return encodedRedirect("error", "/sign-in", "This account has been deactivated. Please register a new account to continue.");
+        return encodedRedirect(
+            "error",
+            "/sign-in",
+            `${error.message}`
+        );
     }
 
     return redirect("/user");
