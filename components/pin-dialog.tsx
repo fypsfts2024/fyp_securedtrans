@@ -281,7 +281,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     <AlertDialogFooter>
                         <AlertDialogCancel
                             onClick={() =>
-                                (window.location.href = "/home")
+                                (window.location.href = "/user")
                             }
                         >
                             Go back to Home
