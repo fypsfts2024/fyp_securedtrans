@@ -33,14 +33,14 @@ export default async function Library({
         .from("recycle_bin")
         .select(
             `
-    *,
-    files!inner(*)
-  `
+            *,
+            files!inner(*)
+        `
         )
         .eq("files.user_id", user?.id);
 
     if (searchParams.search) {
-        query = query.ilike("file_name", `%${searchParams.search}%`);
+        query = query.ilike("files.file_name", `%${searchParams.search}%`);
     }
 
     const { data: files, error } = await query;
