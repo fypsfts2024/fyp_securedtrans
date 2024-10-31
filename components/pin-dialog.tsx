@@ -65,7 +65,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [attempts, setAttempts] = useState(() => {
-        const savedAttempts = localStorage.getItem('pinAttempts');
+        const savedAttempts = localStorage.getItem("pinAttempts");
         return savedAttempts ? parseInt(savedAttempts, 10) : 0;
     });
     const [status, setStatus] = useState(initialStatus);
@@ -113,11 +113,11 @@ const PinDialog: React.FC<PinDialogProps> = ({
             if (isPinCorrect) {
                 setIsOpen(false);
                 onSuccess();
-                localStorage.removeItem('pinAttempts'); // Reset attempts on success
+                localStorage.removeItem("pinAttempts"); // Reset attempts on success
             } else {
                 const newAttempts = attempts + 1;
                 setAttempts(newAttempts);
-                localStorage.setItem('pinAttempts', newAttempts.toString()); // Save to localStorage
+                localStorage.setItem("pinAttempts", newAttempts.toString()); // Save to localStorage
                 if (newAttempts >= 3) {
                     await updateFileStatus("blocked");
                     setStatus("blocked");
@@ -126,7 +126,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 form.reset();
                 toast({
                     title: "Incorrect PIN",
-                    description: `You have ${3 - newAttempts} attempts remaining.`
+                    description: `You have ${3 - newAttempts} attempts remaining.`,
                 });
             }
         } else if (status === "otp_sent") {
@@ -135,7 +135,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 await updateFileStatus("active");
                 setIsOpen(false);
                 onSuccess();
-                localStorage.removeItem('pinAttempts'); // Reset attempts on success
+                localStorage.removeItem("pinAttempts"); // Reset attempts on success
             } else {
                 await updateFileStatus("deleted");
                 setIsOpen(false);
@@ -172,7 +172,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 newStatus as "active" | "deleted" | "blocked" | "otp_sent"
             );
             if (newStatus === "blocked") {
-                localStorage.removeItem('pinAttempts'); // Clear attempts on block
+                localStorage.removeItem("pinAttempts"); // Clear attempts on block
             }
         }
     }
@@ -212,8 +212,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
                         </DialogTitle>
                         <DialogDescription>
                             {status === "otp_sent"
-                                ? "Enter the 6-digit OTP sent to your email."
-                                : "Enter your 6-digit PIN to access the file."}
+                                ? "Please enter the 6-digit OTP sent to your email. If you don’t see it in your inbox, check your spam or junk folder."
+                                : "Enter your 6-digit PIN to access the file securely."}
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
@@ -280,9 +280,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel
-                            onClick={() =>
-                                (window.location.href = "/user")
-                            }
+                            onClick={() => (window.location.href = "/user")}
                         >
                             Go back to Home
                         </AlertDialogCancel>

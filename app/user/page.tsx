@@ -74,7 +74,7 @@ export default async function UserPage({
         <div className="w-full lg:min-w-full flex flex-col gap-6">
             <div className="w-full">
                 <form
-                    action="/user/home"
+                    action="/user"
                     method="get"
                     className="flex flex-row space-x-3"
                 >

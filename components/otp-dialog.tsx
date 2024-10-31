@@ -52,7 +52,7 @@ interface OtpDialogProps {
 
 const OtpDialog: React.FC<OtpDialogProps> = ({
     fileId: propFileId,
-    hideTrigger
+    hideTrigger,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [fileId, setFileId] = useState<string | null>(propFileId || null);
@@ -206,14 +206,18 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 {!triggerHidden && (
                     <DialogTrigger asChild>
-                        <Button className="bg-green-500 text-white">OTP Sent</Button>
+                        <Button className="bg-green-500 text-white">
+                            OTP Sent
+                        </Button>
                     </DialogTrigger>
                 )}
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Enter OTP</DialogTitle>
                         <DialogDescription>
-                            Enter the 6-digit OTP sent to your email.
+                            Please enter the 6-digit OTP sent to your email. If
+                            you don’t see it in your inbox, check your spam or
+                            junk folder.
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
@@ -265,7 +269,9 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel
-                            onClick={() => window.location.href = `/user/library`}
+                            onClick={() =>
+                                (window.location.href = `/user/library`)
+                            }
                         >
                             OK
                         </AlertDialogCancel>

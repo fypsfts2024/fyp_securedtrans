@@ -43,6 +43,16 @@ interface SharedPinDialogProps {
     onFailure: () => void;
 }
 
+interface PinAttempts {
+    [fileId: string]: {
+        count: number;
+        lastAttempt: number;
+    };
+}
+
+const ATTEMPT_RESET_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const MAX_ATTEMPTS = 3;
+
 const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
     name,
     fileId: propFileId,
@@ -52,11 +62,6 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
     onFailure,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [attempts, setAttempts] = useState(() => {
-        // Get attempts from localStorage or set to 0
-        const savedAttempts = localStorage.getItem("sharedPinAttempts");
-        return savedAttempts ? parseInt(savedAttempts, 10) : 0;
-    });
     const [sharedFile, setSharedFile] = useState(shared || false);
     const [status, setStatus] = useState(initialStatus);
     const [fileId, setFileId] = useState<string | null>(propFileId || null);
@@ -68,13 +73,41 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
 
     const supabase = createClient();
 
+    // Get attempts for the current file
+    const getFileAttempts = (fileId: string): number => {
+        const attemptsData = localStorage.getItem('sharedPinAttempts');
+        if (!attemptsData) return 0;
+
+        const attempts: PinAttempts = JSON.parse(attemptsData);
+        const fileAttempts = attempts[fileId];
+
+        if (!fileAttempts) return 0;
+
+        // Reset attempts if last attempt was more than 24 hours ago
+        if (Date.now() - fileAttempts.lastAttempt > ATTEMPT_RESET_TIME) {
+            updateFileAttempts(fileId, 0);
+            return 0;
+        }
+
+        return fileAttempts.count;
+    };
+
+    // Update attempts for a specific file
+    const updateFileAttempts = (fileId: string, count: number) => {
+        const attemptsData = localStorage.getItem('sharedPinAttempts');
+        const attempts: PinAttempts = attemptsData ? JSON.parse(attemptsData) : {};
+
+        attempts[fileId] = {
+            count,
+            lastAttempt: Date.now(),
+        };
+
+        localStorage.setItem('sharedPinAttempts', JSON.stringify(attempts));
+    };
+
     useEffect(() => {
         setFileId(propFileId || null);
     }, [propFileId]);
-
-    useEffect(() => {
-        localStorage.setItem("sharedPinAttempts", attempts.toString());
-    }, [attempts]);
 
     async function onSubmit(data: z.infer<typeof InputSchema>) {
         if (!fileId) {
@@ -85,18 +118,39 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
             return;
         }
 
+        // Get current attempts for this file
+        const currentAttempts = getFileAttempts(fileId);
+
+        if (currentAttempts >= MAX_ATTEMPTS) {
+            toast({
+                title: "Too many attempts",
+                description: "Please try again in 24 hours.",
+            });
+            return;
+        }
+
         if (status === "active") {
             const isPinCorrect = await validateSharedPin(data.value);
             if (isPinCorrect) {
                 setIsOpen(false);
                 onSuccess();
-                setAttempts(0); // Reset attempts on success
+                updateFileAttempts(fileId, 0); // Reset attempts on success
             } else {
-                const newAttempts = attempts + 1;
-                setAttempts(newAttempts);
-                if (newAttempts >= 3) {
+                const newAttempts = currentAttempts + 1;
+                updateFileAttempts(fileId, newAttempts);
+                
+                if (newAttempts >= MAX_ATTEMPTS) {
                     await leaveFile();
+                    toast({
+                        title: "Access Blocked",
+                        description: "Too many incorrect attempts. Try again in 24 hours or request a new share.",
+                    });
                     window.location.reload();
+                } else {
+                    toast({
+                        title: "Incorrect PIN",
+                        description: `${MAX_ATTEMPTS - newAttempts} attempts remaining.`,
+                    });
                 }
                 form.reset();
             }
@@ -177,8 +231,12 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
             description: "To access the file again, you will need to ask for a new share link.",
         });
 
-        setAttempts(0);
+        // Reset attempts for this file
+        updateFileAttempts(fileId, 0);
     }
+
+    // Get current attempts for display
+    const currentAttempts = fileId ? getFileAttempts(fileId) : 0;
 
     return (
         <>
@@ -228,7 +286,7 @@ const SharedPinDialog: React.FC<SharedPinDialogProps> = ({
                                         {status === "active" && (
                                             <FormDescription>
                                                 Attempts remaining:{" "}
-                                                {3 - attempts}
+                                                {MAX_ATTEMPTS - currentAttempts}
                                             </FormDescription>
                                         )}
                                     </FormItem>

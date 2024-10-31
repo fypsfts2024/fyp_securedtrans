@@ -97,16 +97,28 @@ export const signInAction = async (formData: FormData) => {
     const password = formData.get("password") as string;
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
 
-    if (error) {
+    if (signInError) {
         return encodedRedirect(
             "error",
             "/sign-in",
-            `${error.message}`
+            `${signInError.message}`
+        );
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user?.email_confirmed_at) {
+        await supabase.auth.signOut();
+        
+        return encodedRedirect(
+            "error",
+            "/sign-in",
+            "Please verify your email before signing in. Check your inbox for the verification link."
         );
     }
 

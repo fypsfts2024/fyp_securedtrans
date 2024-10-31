@@ -53,7 +53,7 @@ export default async function Library({
         <div className="w-full lg:min-w-full flex flex-col gap-6">
             <div className="w-full">
                 <form
-                    action="/user/library"
+                    action="/user/recycle-bin"
                     method="get"
                     className="flex flex-row space-x-3"
                 >
