@@ -37,7 +37,8 @@ export default function RestoreFile({
             let query = supabase
                 .from("recycle_bin")
                 .select(`*, files ( *,user_profile(*) )`)
-                .eq("status", "restore_requested");
+                .eq("status", "restore_requested")
+                .order("deleted_at", { ascending: false }); // 排序：最新删除的在最上面
 
             if (searchParams.search) {
                 query = query.ilike(
