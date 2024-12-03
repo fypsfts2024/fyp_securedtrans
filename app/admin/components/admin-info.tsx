@@ -33,11 +33,19 @@ const AdminTable = () => {
     }, []);
 
     const fetchAdmins = async () => {
-        const supabase = createClient();
+       const supabase = createClient();
 
-        let query = supabase.from("admin").select("*").neq("role", "Admin");
+       /* let query = supabase.from("admin").select("*").neq("role", "Admin");
 
-        const { data, error } = await query;
+        const { data, error } = await query;*/
+        
+        // Fetch the latest 3 admins sorted by created_at in descending order
+        const { data, error } = await supabase
+        .from("admin")
+        .select("*")
+        .neq("role", "Admin") // Exclude records where role is "Admin"
+        .order("created_at", { ascending: false }) // Sort by created_at descending (latest first)
+        .limit(3); // Limit to the latest 3 records
 
         if (error) {
             console.error("Error fetching admin data:", error);

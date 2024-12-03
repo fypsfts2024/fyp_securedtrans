@@ -35,13 +35,20 @@ const RestoreTable = () => {
     const fetchFiles = async () => {
         const supabase = createClient();
 
-        let query = supabase
+        /*let query = supabase
             .from("recycle_bin")
             .select(`*, files ( *,user_profile(*) )`)
             .eq("status", "restore_requested");
 
-        const { data, error } = await query;
+        const { data, error } = await query;*/
 
+        const { data, error } = await supabase
+        .from("recycle_bin")
+        .select(`*, files ( *, user_profile(*) )`)
+        .eq("status", "restore_requested")
+        .order("deleted_at", { ascending: false }) // Sort by deleted_at descending (latest first)
+        .limit(3); // Limit to the latest 3 records
+        
         if (error) {
             console.error("Error fetching recycle bin data:", error);
         } else {

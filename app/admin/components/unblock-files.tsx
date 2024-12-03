@@ -35,12 +35,15 @@ const UnblockTable = () => {
     const fetchFiles = async () => {
         const supabase = createClient();
 
-        // Fetch only files where unlock_otp is not empty
+        // Fetch only the latest 3 files where unblock_otp is not empty, sorted by time
         const { data, error } = await supabase
             .from("files")
             .select(`*, user_profile(*)`)
             .neq("unblock_otp", null)
-            .neq("unblock_otp", "");
+            .neq("unblock_otp", "")
+            //new added
+            .order("created_at", { ascending: false }) // Sort by created_at in descending order (latest first)
+            .limit(3); // Limit to the latest 3 records
 
         console.log(data);
 
