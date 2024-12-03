@@ -34,8 +34,19 @@ export default function ManageAdmin({
         const fetchAdmins = async () => {
             const supabase = createClient();
 
-            let query = supabase.from("admin").select("*").neq("role", "Admin");
-
+            //let query = supabase.from("admin").select("*").neq("role", "Admin");
+          
+          
+            // 查询并按 created_at 降序排列
+            let query = supabase
+            .from("admin")
+            .select("*")
+            .neq("role", "Admin")
+            .order("created_at", { ascending: false }); // 排序：最新的在最上面
+           
+           
+           
+           
             if (searchParams.search) {
                 query = query.ilike("username", `%${searchParams.search}%`);
             }
