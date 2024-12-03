@@ -37,8 +37,10 @@ const AuditLogTable = () => {
 
         // Fetch only files where unlock_otp is not empty
         const { data, error } = await supabase
-            .from("logs")
-            .select(`*, user_profile(*), files(*)`);
+        .from("logs")
+        .select("*, user_profile(*), files(*)") // 查询相关字段
+        .order("created_at", { ascending: false }) // 按时间降序排序
+        .limit(3); // 只获取 3 条记录
 
         console.log(data);
 
@@ -46,6 +48,7 @@ const AuditLogTable = () => {
             console.error("Error fetching files:", error);
         } else {
             setFiles(data || []);
+            
         }
 
         setLoading(false);
