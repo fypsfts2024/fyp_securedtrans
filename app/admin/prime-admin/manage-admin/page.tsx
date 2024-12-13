@@ -79,7 +79,7 @@ export default function ManageAdmin({
                         <Input
                             type="search"
                             name="search"
-                            placeholder="Search by file name"
+                            placeholder="Search by Username"
                             className="w-full rounded-lg bg-background pl-8"
                             defaultValue={searchParams.search || ""}
                         />
